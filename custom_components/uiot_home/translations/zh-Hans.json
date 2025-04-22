@@ -1,0 +1,32 @@
+{
+    "config": {
+        "step": {
+            "user": {
+                "title": "UIOT账号",
+                "description": "请输入您的UIOT账号信息",
+                "data": {
+                    "username": "账号",
+                    "password": "密码"
+                }
+            },
+            "select_device": {
+                "title": "选择家",
+                "description": "请选择要绑定的家",
+                "data": {
+                    "device_name": "家名称"
+                }
+            }
+        },
+        "error": {
+            "cannot_connect": "连接失败",
+            "invalid_auth": "账号或密码错误",
+            "no_devices": "未找到设备",
+            "get_token_error": "获取token失败",
+            "bind_host_error": "绑定主机失败",
+            "unknown": "未知错误"
+        },
+        "abort": {
+            "already_configured": "设备已配置"
+        }
+    }
+} 

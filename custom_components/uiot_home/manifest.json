@@ -1,0 +1,10 @@
+{
+  "domain": "uiot_home",
+  "name": "Uiot Home",
+  "documentation": "https://example.com",
+  "version": "1.0.0",
+  "config_flow": true,
+  "dependencies": [],
+  "codeowners": ["@uiot"]
+}
+
