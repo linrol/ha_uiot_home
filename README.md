@@ -1,70 +1,73 @@
-# Home Assistant UIOT集成
+# UIOT Home Integration for Home Assistant
 
-UIOT集成是一个由UIOT官方提供支持的 Home Assistant 的集成组件，它可以让您在 Home Assistant 中使用UIOT的智能家居设备。
+[English](./README.md) | [简体中文](./README_zh.md)
 
-## 安装
+The UIOT integration is an officially supported Home Assistant integration provided by UIOT. It allows you to use UIOT's smart home devices within Home Assistant.
 
-请使用以下方式安装:
+## Installation
 
-### 方法 1： HACS安装
+Please install it using the following method:
 
-1. 确保`Home Assistant`中已安装HACS
-2. 打开`HACS`, 点击`[Custom repositories]`, `Repository` 输入: `https://github.com/uiotlink/ha_uiot_home`, `Category` 选择 `[Integration]`
-3. **重启Home Assistant**.
+### Method 1:Install via HACS
 
-### 方法 2：手动安装
+> 1. make sure you have installed HACS to Home Assistant [HACS install guide](https://hacs.xyz/docs/setup/download)
+> 2. open HACS, click [Custom repositories], Repository input: `https://github.com/uiotlink/ha_uiot_home`, Category select [Integration]
+> 3. **Restart Home Assistant**.
 
-> 1. 从[Latest Release](https://github.com/uiotlink/ha_uiot_home) 下载 `uiot_home.zip`
-> 2. 解压并复制 `uiot_home` 到 `/custom_components/`.
-> 3. **重启 Home Assistant**.
 
-## 配置
+### Method 2:Manual Install
 
-### 登录
+>1. Download `ha_uiot_home.zip` from [Latest Release](https://github.com/uiotlink/ha_uiot_home)
+>2. Unzip and copy `uiot_home` to `/custom_components/`. in Home Assistant.
+>3. **Restart Home Assistant**.
 
-[设置 > 设备与服务 > 添加集成] > 搜索“`Uiot Home`” > 下一步 > 请点击此处进行登录 > 使用UIOT账号密码登录，注意：您的账号下必须已经添加了正常可用的UIOT主机。
+## Configuration
 
-### 设备同步
+### Login
 
-登录成功后，会弹出用户账号下的所有主机家庭，选择需要绑定的家庭，提交后会自动同步该家庭下目前已支持的所有设备。
+[Settings > Devices & Services > Add Integration] > Search for “Uiot Home” > Next > Click here to log in > Log in using your UIOT account credentials. Note: Your account must already have a functioning UIOT host added.
 
-## 已支持的设备
+### Device synchronization
 
-| 名称                    | 功能                                           |
-| :---------------------- | ---------------------------------------------- |
-| 零火单开                | 开关                                           |
-| 零火双开                | 开关                                           |
-| 零火三开                | 开关                                           |
-| 零火四开                | 开关                                           |
-| 智能灯带控制器          | 开关、亮度、色温、颜色                         |
-| 智能色温灯控制器        | 开关、亮度、色温                               |
-| 智能调光控制器          | 开关、亮度                                     |
-| 调光开关                | 开关、亮度、色温                               |
-| 智能筒射灯              | 开关、亮度、色温                               |
-| 智能门窗磁              | 电量、工作模式、开合状态                       |
-| 红外幕帘                | 电量、光照强度、报警状态                       |
-| AI超级传感器            | 工作模式、光照、体动特征、有人无人             |
-| 双鉴传感器              | 电量、工作模式、体动特征、有人无人             |
-| 温湿度传感器            | 电量、温度、湿度状态                           |
-| 四合一空气盒子（PM2.5） | 光照、温度、湿度、pm2.5                        |
-| 四合一空气精灵（PM2.5） | 光照、温度、湿度、pm2.5                        |
-| 四合一空气精灵（甲醛）  | 光照、温度、湿度、甲醛                         |
-| 四合一空气精灵（CO2）   | 光照、温度、湿度、co2                          |
-| 五合一空气精灵（CO2）   | 光照、温度、湿度、co2、TVOC                    |
-| 七合一空气盒子          | 光照、温度、湿度、co2、pm2.5、噪音、甲醛       |
-| 七合一空气盒子（TVOC）  | 光照、温度、湿度、co2、pm2.5、噪音、TVOC       |
-| 七合一空气精灵          | 光照、温度、湿度、co2、pm2.5、噪音、甲醛       |
-| 七合一空气精灵（TVOC）  | 光照、温度、湿度、co2、pm2.5、噪音、TVOC       |
-| 八合一空气盒子          | 光照、温度、湿度、co2、pm2.5、噪音、甲醛、TVOC |
-| 八合一空气精灵          | 光照、温度、湿度、co2、pm2.5、噪音、甲醛、TVOC |
-| 单路电机面板            | 开、关、暂停                                   |
-| 双路电机面板            | 开、关、暂停                                   |
-| 智能窗帘电机            | 开、关、暂停、开合度                           |
-| 智能卷帘电机            | 开、关、暂停、开合度                           |
-| 锂电池智能窗帘电机      | 开、关、暂停、开合度                           |
-| 智能平移开窗器          | 开、关、暂停、开合度                           |
-| 智能推拉开窗器          | 开、关、暂停、开合度                           |
-| 杜亚管状电机控制盒      | 开、关、暂停、开合度                           |
-| 梦幻窗帘电机            | 开、关、暂停、开合度、旋转角度                 |
-| 六合一空气精灵          | 光照、温度、湿度、co2、pm2.5、噪音             |
+After logging in successfully, a list of all host families under the user's account will pop up. Select the family you need to bind, and after submission, all currently supported devices under that family will be automatically synchronized.
+
+## Supported devices
+
+| Name                                     | Function                                                     |
+| :--------------------------------------- | ------------------------------------------------------------ |
+| Zero-fire single switch                  | switch                                                       |
+| Zero-fire double switch                  | switch                                                       |
+| Zero-fire triple switch                  | switch                                                       |
+| Zero-fire four switch                    | switch                                                       |
+| Smart light strip controller             | switch、brightness、color temperature、color                 |
+| Smart color temperature light controller | switch、brightness、color temperature                        |
+| Smart dimming controller                 | switch、brightness                                           |
+| Dimmer switch                            | switch、brightness、color temperature                        |
+| Smart spotlight                          | switch、brightness、color temperature                        |
+| Smart door/window sensor                 | battery level、working mode、 opening and closing status     |
+| Infrared curtain detector                | battery level、 light intensity、 alarm status               |
+| AI super sensor                          | working mode、 lighting、 body movement characteristics、 whether there are people or not |
+| Dual-detection sensor                    | working mode、 lighting、 body movement characteristics、 whether there are people or not |
+| Temperature and humidity sensor          | battery power、 temperature and humidity status              |
+| Four-in-one air box（PM2.5）             | light、 temperature、 humidity、pm2.5                        |
+| Four-in-one air sensor（PM2.5）          | light、 temperature、 humidity、pm2.5                        |
+| Four-in-one air sensor（甲醛）           | light、 temperature、 humidity、formaldehyde                 |
+| Four-in-one air sensor（CO2）            | light、 temperature、 humidity、co2                          |
+| Five-in-one air sensor（CO2）            | light、 temperature、 humidity、co2、TVOC                    |
+| Seven-in-one air box                     | light、 temperature、 humidity、co2、pm2.5、noise、formaldehyde |
+| Seven-in-one air box（TVOC）             | light、 temperature、 humidity、co2、pm2.5、noise、TVOC      |
+| Seven-in-one air sensor                  | light、 temperature、 humidity、co2、pm2.5、noise、formaldehyde |
+| Seven-in-one air sensor（TVOC）          | light、 temperature、 humidity、co2、pm2.5、noise、TVOC      |
+| Eight-in-one air box                     | light、 temperature、 humidity、co2、pm2.5、noise、formaldehyde、TVOC |
+| Eight-in-one air sensor                  | light、 temperature、 humidity、co2、pm2.5、noise、formaldehyde、TVOC |
+| Single-channel motor panel               | on、off、pause                                               |
+| Dual-channel motor panel                 | on、off、pause                                               |
+| Smart curtain motor                      | on、off、pause、opening and closing degree                   |
+| Smart roller blind motor                 | on、off、pause、opening and closing degree                   |
+| Lithium battery smart curtain motor      | on、off、pause、opening and closing degree                   |
+| Smart sliding window opener              | on、off、pause、opening and closing degree                   |
+| Smart push-pull window opener            | on、off、pause、opening and closing degree                   |
+| Dooya tubular motor control box          | on、off、pause、opening and closing degree                   |
+| Dream curtain motor                      | on、off、pause、opening and closing degree、rotation angle   |
+| Six-in-one air sensor                    | light、 temperature、 humidity、co2、pm2.5、noise            |
 
