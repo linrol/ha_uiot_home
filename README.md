@@ -17,7 +17,7 @@ Please install it using the following method:
 
 ### Method 2:Manual Install
 
->1. Download `ha_uiot_home.zip` from [Latest Release](https://github.com/uiotlink/ha_uiot_home)
+>1. Download `uiot_home.zip` from [Latest Release](https://github.com/uiotlink/ha_uiot_home/releases/latest)
 >2. Unzip and copy `uiot_home` to `/custom_components/`. in Home Assistant.
 >3. **Restart Home Assistant**.
 

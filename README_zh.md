@@ -16,7 +16,7 @@ UIOT集成是一个由UIOT官方提供支持的 Home Assistant 的集成组件�
 
 ### 方法 2：手动安装
 
-> 1. 从[Latest Release](https://github.com/uiotlink/ha_uiot_home) 下载 `uiot_home.zip`
+> 1. 从[Latest Release](https://github.com/uiotlink/ha_uiot_home/releases/latest) 下载 `uiot_home.zip`
 > 2. 解压并复制 `uiot_home` 到 `/custom_components/`.
 > 3. **重启 Home Assistant**.
 
