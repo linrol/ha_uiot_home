@@ -37,9 +37,6 @@ class UIOTMqttClient:
         self._config = config
         self._CLIENT_ID = "uiotop_sdk@" + self._SYSTEMID + "_" + timestamp
         _LOGGER.debug("_CLIENT_ID=%s", self._CLIENT_ID)
-        # self._client = mqtt.Client(
-        #     self._CLIENT_ID, callback_api_version=mqtt.CallbackAPIVersion.VERSION1
-        # )
         # 动态适配不同版本的 paho-mqtt
         try:
             # 尝试使用 callback_api_version 参数（paho-mqtt 2.0+）

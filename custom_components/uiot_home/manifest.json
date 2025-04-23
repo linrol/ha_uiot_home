@@ -1,10 +1,14 @@
 {
   "domain": "uiot_home",
   "name": "Uiot Home",
-  "documentation": "https://example.com",
-  "version": "1.0.0",
+  "documentation": "https://github.com/uiotlink/ha_uiot_home/blob/v1.0.0/README_zh.md",
+  "issue_tracker": "https://github.com/uiotlink/ha_uiot_home/issues",
+  "version": "v1.0.0",
   "config_flow": true,
-  "dependencies": [],
+  "integration_type": "hub",
+  "iot_class": "cloud_polling",
+  "dependencies": ["http","mqtt"],
+  "requirements": ["requests>=2.32.3"],
   "codeowners": ["@uiot"]
 }
 

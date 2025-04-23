@@ -111,7 +111,7 @@ class UIOTHost:
             _LOGGER.exception("Unexpected error")
             return False
         else:
-            _LOGGER.info("Res:%s", res)
+            _LOGGER.debug("Res:%s", res)
             if res["status"] != 0:
                 return False
             return True
@@ -210,7 +210,7 @@ class UIOTHost:
             res = await self._http_client.request_async(
                 self._config.request_url, secret=self._config.app_secret
             )
-            _LOGGER.info("Res: %s", res)
+            _LOGGER.debug("Res: %s", res)
             if res["status"] != 0:
                 return {}
             return self.get_response_data(res["text"])

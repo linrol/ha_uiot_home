@@ -104,7 +104,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     retries = 0
     while retries < MAX_RETRIES:
         res = await uiot_host.uiot_get_host_devices_async()
-        _LOGGER.info("Res:%s", res)
+        _LOGGER.debug("Res:%s", res)
         if res:
             remove_device(hass)
             device_list = phase_dev_list(res)
