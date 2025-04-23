@@ -10,7 +10,7 @@ Please install it using the following method:
 
 ### Method 1:Install via HACS
 
-> 1. make sure you have installed HACS to Home Assistant [HACS install guide](https://hacs.xyz/docs/setup/download)
+> 1. make sure you have installed HACS to Home Assistant [HACS install guide](https://hacs.xyz/docs/use/download/download/)
 > 2. open HACS, click [Custom repositories], Repository input: `https://github.com/uiotlink/ha_uiot_home`, Category select [Integration]
 > 3. **Restart Home Assistant**.
 
