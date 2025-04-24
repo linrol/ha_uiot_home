@@ -10,7 +10,7 @@ from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .uiot_api.const import COMPANY, DOMAIN
-from .uiot_api.uiot_device import UIOTDevice
+from .uiot_api.uiot_device import UIOTDevice, is_entity_exist
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -156,12 +156,11 @@ async def async_setup_entry(
     def handle_config_update(msg):
         try:
             devices_data = msg
-            _LOGGER.debug("devices_data %s", devices_data)
-
             device_data = []
             for device in devices_data:
                 if device.get("type") == "light":
                     _LOGGER.debug("light")
+                    _LOGGER.debug("devices_data %s", devices_data)
                     device_data.append(device)
 
             new_entities = []
@@ -172,7 +171,8 @@ async def async_setup_entry(
                 _LOGGER.debug("name:%s", name)
                 _LOGGER.debug("deviceId:%d", deviceId)
                 uiot_dev: UIOTDevice = hass.data[DOMAIN].get("uiot_dev")
-                new_entities.append(Light(light_data, uiot_dev, hass))
+                if not is_entity_exist(hass, deviceId):
+                    new_entities.append(Light(light_data, uiot_dev, hass))
 
             if new_entities:
                 async_add_entities(new_entities)
@@ -280,6 +280,8 @@ class Light(LightEntity):
     def _handle_mqtt_message(self, msg):
         """Handle incoming MQTT messages for state updates."""
         # _LOGGER.debug(f"mqtt_message的数据:{ msg.payload}")
+        if self.hass is None:
+            return
         msg_data = json.loads(msg.payload)
 
         if "online_report" in msg.topic:

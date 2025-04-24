@@ -4,11 +4,13 @@ from homeassistant.const import Platform
 
 DOMAIN = "uiot_home"
 COMPANY = "UIOT"
-AUTHURL = "https://dev-oauth.unisiot.com:8165/oauth"
 API_OPT_AUTH = "/oauth/token"
-GATEWAY = "https://dev-openapi.unisiot.com/gateway"
-APP_KEY = "3t4hjc4yvfvh34rhxjc1qbiu6csh635g"
-APP_SECRET = "fMJ08baFhxLB21RdA0xtqCALBVRhUfEB"
-MQTT_BROKER = "dev-bmqt.unisiot.com"
+
+# """Production environment"""
+AUTHURL = "https://oauth.unisiot.com:8165/oauth"
+GATEWAY = "https://openapi.unisiot.com/gateway"
+APP_KEY = "8vj99vwcn9qxk295oqmq7q3p2ni417q7"
+APP_SECRET = "i6AFqgDm8Bg2m9qrvYiqW3BqRhB3NEbN"
+MQTT_BROKER = "bmqt.unisiot.com"
 MQTT_PORT = 51322
 PLATFORMS = [Platform.COVER, Platform.LIGHT, Platform.SENSOR, Platform.SWITCH]

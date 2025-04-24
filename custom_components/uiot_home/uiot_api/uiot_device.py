@@ -86,3 +86,18 @@ def remove_device(hass: HomeAssistant):
             else:
                 _LOGGER.debug("移除设备名称：%s ", device.name)
                 device_registry.async_remove_device(device_id)
+
+
+def is_entity_exist(hass: HomeAssistant, deviceID) -> bool:
+    """Uiot device remove."""
+    registry_entry = er.async_get(hass)
+    for entity_id, entity_entry in list(registry_entry.entities.items()):
+        # 检查实体是否属于当前配置项
+        if entity_entry.platform == DOMAIN:
+            if (
+                str(deviceID) == entity_entry.unique_id
+                or str(deviceID) in entity_entry.unique_id
+            ):
+                _LOGGER.debug("找到实体,entity_id=%s", entity_id)
+                return True
+    return False

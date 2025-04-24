@@ -9,7 +9,7 @@ from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .uiot_api.const import COMPANY, DOMAIN
-from .uiot_api.uiot_device import UIOTDevice
+from .uiot_api.uiot_device import UIOTDevice, is_entity_exist
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -48,14 +48,15 @@ async def async_setup_entry(
 
     @callback
     def handle_config_update(msg):
+        if hass is None:
+            return
         try:
             devices_data = msg
-            _LOGGER.debug("devices_data %s", devices_data)
-
             device_data = []
             for device in devices_data:
                 if device.get("type") == "switch":
                     _LOGGER.debug("switch")
+                    _LOGGER.debug("devices_data %s", devices_data)
                     device_data.append(device)
 
             new_entities = []
@@ -74,7 +75,8 @@ async def async_setup_entry(
                     uiot_dev: UIOTDevice = hass.data[DOMAIN].get("uiot_dev")
                     switch_data["mainDevieName"] = deviceName
                     switch_data["mainDeviceId"] = str(mainDeviceId)
-                    new_entities.append(Switch(switch_data, uiot_dev, hass))
+                    if not is_entity_exist(hass, deviceId):
+                        new_entities.append(Switch(switch_data, uiot_dev, hass))
 
             if new_entities:
                 async_add_entities(new_entities)
@@ -142,6 +144,8 @@ class Switch(SwitchEntity):
     def _handle_mqtt_message(self, msg):
         """Handle incoming MQTT messages for state updates."""
         # _LOGGER.debug(f"mqtt_message的数据:{msg.payload}")
+        if self.hass is None:
+            return
         msg_data = json.loads(msg.payload)
 
         if "online_report" in msg.topic:
