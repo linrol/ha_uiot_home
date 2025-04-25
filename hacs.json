@@ -1,6 +1,6 @@
 {
     "name": "Uiot Home",
-    "homeassistant": "2025.2.4",
+    "homeassistant": "2025.2.0",
     "zip_release": true,
     "filename": "uiot_home.zip"
 }
