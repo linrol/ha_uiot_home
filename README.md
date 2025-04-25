@@ -51,7 +51,7 @@ After logging in successfully, a list of all host families under the user's acco
 | Temperature and humidity sensor          | battery power、 temperature and humidity status              |
 | Four-in-one air box（PM2.5）             | light、 temperature、 humidity、pm2.5                        |
 | Four-in-one air sensor（PM2.5）          | light、 temperature、 humidity、pm2.5                        |
-| Four-in-one air sensor（甲醛）           | light、 temperature、 humidity、formaldehyde                 |
+| Four-in-one air sensor（formaldehyde）   | light、 temperature、 humidity、formaldehyde                 |
 | Four-in-one air sensor（CO2）            | light、 temperature、 humidity、co2                          |
 | Five-in-one air sensor（CO2）            | light、 temperature、 humidity、co2、TVOC                    |
 | Seven-in-one air box                     | light、 temperature、 humidity、co2、pm2.5、noise、formaldehyde |

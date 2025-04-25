@@ -10,9 +10,9 @@ UIOT集成是一个由UIOT官方提供支持的 Home Assistant 的集成组件�
 
 ### 方法 1： HACS安装
 
-1. 确保`Home Assistant`中已安装HACS
-2. 打开`HACS`, 点击`[Custom repositories]`, `Repository` 输入: `https://github.com/uiotlink/ha_uiot_home`, `Category` 选择 `[Integration]`
-3. **重启Home Assistant**.
+> 1. 确保`Home Assistant`中已安装HACS
+> 2. 打开`HACS`, 点击`[Custom repositories]`, `Repository` 输入: `https://github.com/uiotlink/ha_uiot_home`, `Category` 选择 `[Integration]`
+> 3. **重启Home Assistant**.
 
 ### 方法 2：手动安装
 
