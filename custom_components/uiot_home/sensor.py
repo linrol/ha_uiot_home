@@ -97,8 +97,12 @@ def senser_data_parse_list(senser_data, entities, hass: HomeAssistant) -> list:
         senser_data["icon"] = "mdi:walk"
         if humanActiveState == "inactivity":
             senser_data["cur_value"] = "静止"
-        else:
+        elif humanActiveState == "noFeatures":
+            senser_data["cur_value"] = "无特征"
+        elif humanActiveState == "active":
             senser_data["cur_value"] = "活跃"
+        else:
+            senser_data["cur_value"] = "无特征"
         entities.append(GenericSensor(senser_data, hass))
 
     if properties.get("contactState"):

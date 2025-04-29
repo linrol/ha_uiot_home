@@ -26,7 +26,7 @@ from .uiot_api.util import phase_dev_list
 
 _LOGGER = logging.getLogger(__name__)
 
-MAX_RETRIES = 60  # 最大重试次数
+MAX_RETRIES = 30  # 最大重试次数
 RETRY_DELAY = 5  # 每次重试之间的延迟时间（秒）
 
 
@@ -39,13 +39,19 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     """
     _LOGGER.debug("Set up uiot home from a config entry")
+    _LOGGER.debug("entry_id:%s", entry.entry_id)
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN][entry.entry_id] = entry.data
     hass.data[DOMAIN]["entry"] = entry
 
+    cur_entry_id = "cur_" + entry.entry_id
+    if cur_entry_id not in hass.data[DOMAIN]:
+        hass.data[DOMAIN][cur_entry_id] = {}
+
     host_sn = entry.data.get(CONF_MAC)
     user_name = entry.data.get(CONF_USERNAME)
     passwd = entry.data.get(CONF_PASSWORD)
+    Third_sn = host_sn
     _LOGGER.debug("host_sn=%s", host_sn)
 
     config = UIOTConfig(
@@ -53,13 +59,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         access_token="",
         app_key=APP_KEY,
         app_secret=APP_SECRET,
-        third_name="test",
-        third_sn="202005190099",
+        third_name="Home Assistant",
+        third_sn=Third_sn,
         host_sn=host_sn,
     )
     hass.data[DOMAIN]["config"] = config
 
     uiot_host = UIOTHost(config=config)
+
+    hass.data[DOMAIN]["uiot_host"] = uiot_host
 
     (
         access_token,
@@ -103,10 +111,22 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     retries = 0
     while retries < MAX_RETRIES:
+        result = await uiot_host.uiot_bind_host_async(host_sn)
+        if result is True:
+            _LOGGER.debug("Bind host ok")
+            break
+        retries += 1
+        _LOGGER.error("Bind host Error! retries=%d", retries)
+        if retries < MAX_RETRIES:
+            _LOGGER.info("Retrying in %d seconds", RETRY_DELAY)
+            await asyncio.sleep(RETRY_DELAY)  # 等待一段时间后重试
+
+    retries = 0
+    while retries < MAX_RETRIES:
         res = await uiot_host.uiot_get_host_devices_async()
         _LOGGER.debug("Res:%s", res)
         if res:
-            remove_device(hass)
+            remove_device(hass, entry.entry_id)
             device_list = phase_dev_list(res)
             _LOGGER.debug("dev list:%s", device_list)
             hass.data[DOMAIN]["devices"] = device_list
@@ -119,6 +139,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     mqtt_client = UIOTMqttClient(hass, MQTT_BROKER, MQTT_PORT, config=config)
     hass.data[DOMAIN]["mqtt_client"] = mqtt_client
+    hass.data[DOMAIN][cur_entry_id]["mqtt_client"] = mqtt_client
 
     uiot_dev = UIOTDevice(config=config)
     hass.data[DOMAIN]["uiot_dev"] = uiot_dev
@@ -135,15 +156,18 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
     _LOGGER.debug("Unload a config entry")
-    remove_device(hass)
+    _LOGGER.debug("entry_id:%s", entry.entry_id)
+
+    remove_device(hass, entry.entry_id)
     if DOMAIN in hass.data and "devices" in hass.data[DOMAIN]:
         del hass.data[DOMAIN]["devices"]
 
-    if DOMAIN in hass.data and "mqtt_client" in hass.data[DOMAIN]:
-        client: UIOTMqttClient = hass.data[DOMAIN]["mqtt_client"]
+    cur_entry_id = "cur_" + entry.entry_id
+    if DOMAIN in hass.data and "mqtt_client" in hass.data[DOMAIN][cur_entry_id]:
+        client: UIOTMqttClient = hass.data[DOMAIN][cur_entry_id]["mqtt_client"]
         client.destrory_client()
         # 清理引用
-        del hass.data[DOMAIN]["mqtt_client"]
+        del hass.data[DOMAIN][cur_entry_id]["mqtt_client"]
         _LOGGER.debug("MQTT client destroyed successfully")
     else:
         _LOGGER.debug("MQTT client not found in hass.data")
@@ -151,5 +175,4 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     res = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if res:
         hass.data[DOMAIN].pop(entry.entry_id)
-        hass.data[DOMAIN].pop("entry")
     return res

@@ -27,7 +27,7 @@ class UIOTDevice:
     async def dev_control_real(self, deviceId, property: dict) -> int:
         """Uiot device control."""
         self._http_client.body = {
-            "thirdSn": "202005190099",
+            "thirdSn": self._config.third_sn,
             "appKey": self._config.app_key,
             "sn": self._config.host_sn,
             "deviceId": deviceId,
@@ -60,13 +60,16 @@ class UIOTDevice:
         return state
 
 
-def remove_device(hass: HomeAssistant):
+def remove_device(hass: HomeAssistant, config_entry_id: str):
     """Uiot device remove."""
     # 移除实体
     registry_entry = er.async_get(hass)
     for entity_id, entity_entry in list(registry_entry.entities.items()):
         # 检查实体是否属于当前配置项
-        if entity_entry.platform == DOMAIN:
+        if (
+            entity_entry.platform == DOMAIN
+            and entity_entry.config_entry_id == config_entry_id
+        ):
             _LOGGER.debug(
                 "遍历实体注册表:e_id:%s,u_id:%s", entity_id, entity_entry.unique_id
             )
@@ -78,7 +81,7 @@ def remove_device(hass: HomeAssistant):
     reg = registry_entry.entities
     for device_id, device in list(device_registry.devices.items()):
         # 检查设备是否属于当前配置项
-        if hass.data[DOMAIN]["entry"].entry_id in device.config_entries:
+        if config_entry_id in device.config_entries:
             # 检查设备是否关联了实体
             entities = reg.get_entries_for_device_id(device_id)
             if entities:

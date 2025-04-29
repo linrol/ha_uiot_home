@@ -30,7 +30,7 @@ class UIOTHomeConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             access_token="",
             app_key=APP_KEY,
             app_secret=APP_SECRET,
-            third_name="test",
+            third_name="Home Assistant",
             third_sn="202005190099",
             host_sn="",
         )
@@ -40,6 +40,7 @@ class UIOTHomeConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self._sn = ""
         self._access_token = ""
         self._uiot_oauth = UIOTHost(config=config)
+        self.config = config
 
     async def async_step_user(self, user_input=None):
         """Handle the initial step."""
@@ -111,6 +112,12 @@ class UIOTHomeConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 None,
             )
             _LOGGER.info("Sn:%s", self._sn)
+
+            self.config.third_sn = self._sn
+
+            self.config.host_sn = self._sn
+
+            self._uiot_oauth.update_host_config(self.config)
 
             (
                 self._access_token,

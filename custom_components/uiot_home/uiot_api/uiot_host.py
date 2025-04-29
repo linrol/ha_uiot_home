@@ -286,3 +286,40 @@ class UIOTHost:
             res_obj = json.loads(response.text)
             snList = res_obj["result"]["snList"]
         return snList
+
+    def update_host_config(self, config) -> None:
+        """Update host config."""
+        self._config = config
+
+    async def uiot_unbind_host_async(self, host_sn: str) -> int:
+        """Uiot unbind host async."""
+        try:
+            header = {
+                "timestamp": get_timestamp_str(),
+                "appkey": self._config.app_key,
+                "accessToken": self._config.access_token,
+                "method": "uiotsoft.openapi.host.unbindthird",
+            }
+            self._http_client.update_header(header)
+            self._http_client.body = {
+                "thirdSn": self._config.third_sn,
+                "appKey": self._config.app_key,
+                "sn": host_sn,
+            }
+            _LOGGER.info("Header:%s", header)
+            _LOGGER.info("Body:%s", self._http_client.body)
+            self._config.host_sn = host_sn
+            res = await self._http_client.request_async(
+                self._config.request_url, secret=self._config.app_secret
+            )
+        except KeyError as e:
+            _LOGGER.error("Key error: %s", e)
+            return False
+        except Exception:
+            _LOGGER.exception("Unexpected error")
+            return False
+        else:
+            _LOGGER.debug("Res:%s", res)
+            if res["status"] != 0:
+                return False
+            return True
