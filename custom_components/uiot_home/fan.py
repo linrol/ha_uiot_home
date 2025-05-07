@@ -10,6 +10,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .uiot_api.const import COMPANY, DOMAIN
 from .uiot_api.uiot_device import UIOTDevice, is_entity_exist
+from typing import Any
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -111,7 +112,7 @@ class Fan(FanEntity):
 
         self._attr_device_info = {
             "identifiers": {(f"{DOMAIN}", f"{self.mac}")},
-            "name": f"{light_data.get('deviceName', "")}",
+            "name": f"{fan_data.get('deviceName', "")}",
             "manufacturer": f"{COMPANY}",
             "suggested_area": f"{fan_data.get('roomName', "")}",
             "model": f"{fan_data.get('model', "")}",
@@ -210,7 +211,12 @@ class Fan(FanEntity):
         """Return true if switch is on."""
         return self._attr_is_on
 
-    async def async_turn_on(self, **kwargs) -> None:
+    async def async_turn_on(
+        self,
+        percentage: int | None = None,
+        preset_mode: str | None = None,
+        **kwargs: Any,
+    ) -> None:
         """Turn the switch on."""
         msg_data = {}
         msg_data["powerSwitch"] = "on"
@@ -219,7 +225,7 @@ class Fan(FanEntity):
         await self._uiot_dev.dev_control_real(self._attr_unique_id, msg_data)
         self.async_write_ha_state()
 
-    async def async_turn_off(self, **kwargs) -> None:
+    async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn the switch off."""
         msg_data = {}
         msg_data["powerSwitch"] = "off"
