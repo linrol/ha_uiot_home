@@ -85,6 +85,11 @@ class Fan(FanEntity):
         self._attr_unique_id = str(fan_data.get("deviceId", ""))
         self.mac = fan_data.get("deviceMac", "")
         self._uiot_dev: UIOTDevice = uiot_dev
+        self._attr_supported_features = (
+            FanEntityFeature.TURN_ON |
+            FanEntityFeature.TURN_OFF |
+            FanEntityFeature.SET_SPEED
+        )
         properties_data = fan_data.get("properties", "")
         if properties_data:
             powerSwitch = properties_data.get("powerSwitch", "")
@@ -93,7 +98,6 @@ class Fan(FanEntity):
             else:
                 self._attr_is_on = True
             windSpeed = properties_data.get("windSpeed", "")
-            self._attr_supported_features = FanEntityFeature.SET_SPEED
             if windSpeed == "low":
                 self._attr_percentage = 33
             elif windSpeed == "mid":
