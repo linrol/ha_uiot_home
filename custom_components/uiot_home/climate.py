@@ -130,7 +130,7 @@ class SmartAC(ClimateEntity):
     _LOGGER.debug("_attr_available=%d", self._attr_available)
 
     self._attr_device_info = {
-      "identifiers": {(f"{DOMAIN}", f"{self.mac}")},
+      "identifiers": {(f"{DOMAIN}", f"{self.mac}_{self._attr_unique_id}")},
       "name": f"{climate_data.get('deviceName', "")}",
       "manufacturer": f"{COMPANY}",
       "suggested_area": f"{climate_data.get('roomName', "")}",
