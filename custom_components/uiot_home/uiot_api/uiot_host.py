@@ -221,6 +221,38 @@ class UIOTHost:
             _LOGGER.exception("Unexpected error")
             return {}
 
+    async def uiot_get_host_device_async(self, device_id) -> dict:
+        """Uiot get host devices async."""
+        try:
+            header = {
+                "timestamp": get_timestamp_str(),
+                "appkey": self._config.app_key,
+                "accessToken": self._config.access_token,
+                "method": "uiotsoft.openapi.device.get",
+            }
+            self._http_client.update_header(header)
+            self._http_client.body = {
+                "thirdSn": self._config.third_sn,
+                "appKey": self._config.app_key,
+                "sn": self._config.host_sn,
+                "deviceId": device_id
+            }
+            _LOGGER.debug("_request_url: %s", self._config.request_url)
+            _LOGGER.debug("body: %s", self._http_client.body)
+            res = await self._http_client.request_async(
+                self._config.request_url, secret=self._config.app_secret
+            )
+            _LOGGER.debug("Res: %s", res)
+            if res["status"] != 0:
+                return {}
+            return self.get_response_data(res["text"])
+        except KeyError as e:
+            _LOGGER.error("Key error: %s", e)
+            return {}
+        except Exception:
+            _LOGGER.exception("Unexpected error")
+            return {}
+
     def uiot_get_host_smart(self) -> dict:
         """Uiot get host smart."""
         header = {
@@ -256,6 +288,35 @@ class UIOTHost:
                 "thirdSn": self._config.third_sn,
                 "appKey": self._config.app_key,
                 "sn": self._config.host_sn,
+            }
+            res = await self._http_client.request_async(
+                self._config.request_url, secret=self._config.app_secret
+            )
+            if res["status"] != 0:
+                return {}
+            return {"data": self.get_response_data(res["text"])}
+        except KeyError as e:
+            _LOGGER.error("Key error: %s", e)
+            return None
+        except Exception:
+            _LOGGER.exception("Unexpected error")
+            return None
+
+    async def uiot_get_host_smart_detail_async(self, smart_id) -> dict:
+        """Uiot get host smart detail async."""
+        try:
+            header = {
+                "timestamp": get_timestamp_str(),
+                "appkey": self._config.app_key,
+                "accessToken": self._config.access_token,
+                "method": "uiotsoft.openapi.smart.manual.get",
+            }
+            self._http_client.update_header(header)
+            self._http_client.body = {
+                "thirdSn": self._config.third_sn,
+                "appKey": self._config.app_key,
+                "sn": self._config.host_sn,
+                "smartId": smart_id
             }
             res = await self._http_client.request_async(
                 self._config.request_url, secret=self._config.app_secret
