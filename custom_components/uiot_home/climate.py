@@ -73,8 +73,10 @@ async def async_setup_entry(hass, config_entry, async_add_entities) -> None:
   async_dispatcher_connect(hass, signal, handle_config_update)
 
 
-def get_device_hvac_model(mode):
-  if mode == "cool":
+def get_device_hvac_model(mode, power):
+  if not power:
+    return HVACMode.OFF
+  elif mode == "cool":
     return HVACMode.COOL
   elif mode == "heat":
     return HVACMode.HEAT
@@ -106,9 +108,7 @@ class SmartAC(ClimateEntity):
     self._attr_min_temp = 16
     self._attr_max_temp = 32
     self._attr_temperature_unit = UnitOfTemperature.CELSIUS
-    self._attr_supported_features = (ClimateEntityFeature.TURN_ON |
-                                     ClimateEntityFeature.TURN_OFF |
-                                     ClimateEntityFeature.FAN_MODE |
+    self._attr_supported_features = (ClimateEntityFeature.FAN_MODE |
                                      ClimateEntityFeature.TARGET_TEMPERATURE)
     self._attr_hvac_modes = [HVACMode.COOL, HVACMode.HEAT,  HVACMode.FAN_ONLY, HVACMode.DRY, HVACMode.OFF]
     self._attr_fan_modes = ["low", "medium", "high"]
@@ -119,7 +119,7 @@ class SmartAC(ClimateEntity):
     if properties_data:
       self._attr_is_on = properties_data.get("powerSwitch", "") != "off"
       self._attr_target_temperature = properties_data.get("targetTemperature", 25)
-      self._attr_hvac_mode = get_device_hvac_model(properties_data.get("thermostatMode", ""))
+      self._attr_hvac_mode = get_device_hvac_model(properties_data.get("thermostatMode", ""), self._attr_is_on)
       self._attr_fan_mode = get_device_fan_model(properties_data.get("windSpeed", ""))
 
     if climate_data.get("deviceOnlineState", "") == 0:
@@ -215,10 +215,10 @@ class SmartAC(ClimateEntity):
         _LOGGER.debug("_attr_fan_mode:%s", self._attr_fan_mode)
 
     if payload_str.get("thermostatMode", ""):
-      if self._attr_hvac_mode == get_device_hvac_model(payload_str.get("thermostatMode", "")):
+      if self._attr_hvac_mode == get_device_hvac_model(payload_str.get("thermostatMode", ""), self._attr_is_on):
         _LOGGER.debug("thermostatMode 不需要更新 !")
       else:
-        self._attr_hvac_mode = get_device_hvac_model(payload_str.get("thermostatMode", ""))
+        self._attr_hvac_mode = get_device_hvac_model(payload_str.get("thermostatMode", ""), self._attr_is_on)
         _LOGGER.debug("_attr_hvac_mode:%s", self._attr_hvac_mode)
 
     deviceOnlineState = data.get("deviceOnlineState", "")
@@ -291,6 +291,11 @@ class SmartAC(ClimateEntity):
     self._attr_hvac_mode = hvac_mode
 
     # 发送命令到设备（这里按你的 JSON 格式组装）
+    if hvac_mode == HVACMode.OFF:
+      await self.async_turn_off()
+      return
+    if not self._attr_is_on:
+      await self.async_turn_on()
     msg_data = {}
     if hvac_mode == HVACMode.COOL:
       msg_data["thermostatMode"] = "cool"
@@ -302,7 +307,6 @@ class SmartAC(ClimateEntity):
       msg_data["thermostatMode"] = "dehumidification"
     else:
       msg_data["thermostatMode"] = "off"
-
     _LOGGER.debug("msg_data:%s", msg_data)
     await self._uiot_dev.dev_control_real(self._attr_unique_id, msg_data)
     self.async_write_ha_state()
