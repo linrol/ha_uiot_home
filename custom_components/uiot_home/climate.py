@@ -119,7 +119,8 @@ class SmartAC(ClimateEntity):
     properties_data = climate_data.get("properties", "")
     if properties_data:
       self._attr_is_on = properties_data.get("powerSwitch", "") != "off"
-      self._attr_target_temperature = properties_data.get("targetTemperature", 25)
+      self._attr_current_temperature = properties_data.get("targetTemperature", 22)
+      self._attr_target_temperature = self._attr_current_temperature
       self._attr_hvac_mode = get_device_hvac_model(properties_data.get("thermostatMode", ""), self._attr_is_on)
       self._attr_fan_mode = get_device_fan_model(properties_data.get("windSpeed", ""))
 
@@ -202,11 +203,11 @@ class SmartAC(ClimateEntity):
         _LOGGER.debug("_attr_is_on:%s", self._attr_is_on)
 
     if payload_str.get("targetTemperature", ""):
-      if self._attr_target_temperature == payload_str.get("targetTemperature", 25):
+      if self._attr_current_temperature == payload_str.get("targetTemperature", 25):
         _LOGGER.debug("targetTemperature 不需要更新 !")
       else:
-        self._attr_target_temperature = payload_str.get("targetTemperature", 25)
-        _LOGGER.debug("_attr_target_temperature:%s", self._attr_target_temperature)
+        self._attr_current_temperature = payload_str.get("targetTemperature", 25)
+        _LOGGER.debug("_attr_current_temperature:%s", self._attr_current_temperature)
 
     if payload_str.get("windSpeed", ""):
       if self._attr_fan_mode == get_device_fan_model(payload_str.get("windSpeed", "")):
@@ -246,8 +247,7 @@ class SmartAC(ClimateEntity):
       **kwargs: Any,
   ) -> None:
     """Turn the switch on."""
-    msg_data = {}
-    msg_data["powerSwitch"] = "on"
+    msg_data = {"powerSwitch": "on"}
     self._attr_is_on = True
     _LOGGER.debug("msg_data:%s", msg_data)
     await self._uiot_dev.dev_control_real(self._attr_unique_id, msg_data)
@@ -255,8 +255,7 @@ class SmartAC(ClimateEntity):
 
   async def async_turn_off(self, **kwargs: Any) -> None:
     """Turn the switch off."""
-    msg_data = {}
-    msg_data["powerSwitch"] = "off"
+    msg_data = {"powerSwitch": "off"}
     self._attr_is_on = False
     _LOGGER.debug("msg_data:%s", msg_data)
     await self._uiot_dev.dev_control_real(self._attr_unique_id, msg_data)
