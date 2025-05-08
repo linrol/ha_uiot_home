@@ -119,8 +119,7 @@ class SmartAC(ClimateEntity):
     properties_data = climate_data.get("properties", "")
     if properties_data:
       self._attr_is_on = properties_data.get("powerSwitch", "") != "off"
-      self._attr_current_temperature = properties_data.get("targetTemperature", 22)
-      self._attr_target_temperature = self._attr_current_temperature
+      self._attr_target_temperature = properties_data.get("targetTemperature", 22)
       self._attr_hvac_mode = get_device_hvac_model(properties_data.get("thermostatMode", ""), self._attr_is_on)
       self._attr_fan_mode = get_device_fan_model(properties_data.get("windSpeed", ""))
 
@@ -247,10 +246,20 @@ class SmartAC(ClimateEntity):
       **kwargs: Any,
   ) -> None:
     """Turn the switch on."""
-    msg_data = {"powerSwitch": "on"}
+    temperature = self._attr_target_temperature
+    fan_mode = self._attr_fan_mode
     self._attr_is_on = True
+    msg_data = {"powerSwitch": "on"}
     _LOGGER.debug("msg_data:%s", msg_data)
     await self._uiot_dev.dev_control_real(self._attr_unique_id, msg_data)
+    if temperature:
+      msg_data = {"targetTemperature": int(temperature)}
+      _LOGGER.debug("msg_data:%s", msg_data)
+      await self._uiot_dev.dev_control_real(self._attr_unique_id, msg_data)
+    if fan_mode:
+      msg_data = {"windSpeed": "mid" if fan_mode == "medium" else fan_mode}
+      _LOGGER.debug("msg_data:%s", msg_data)
+      await self._uiot_dev.dev_control_real(self._attr_unique_id, msg_data)
     self.async_write_ha_state()
 
   async def async_turn_off(self, **kwargs: Any) -> None:
@@ -268,6 +277,8 @@ class SmartAC(ClimateEntity):
   async def async_set_fan_mode(self, fan_mode: str) -> None:
     # 控制风速的逻辑
     self._attr_fan_mode = fan_mode
+    if not self._attr_is_on:
+      return
     msg_data = {}
     if fan_mode == "medium":
       msg_data["windSpeed"] = "mid"
@@ -280,6 +291,8 @@ class SmartAC(ClimateEntity):
   async def async_set_temperature(self, **kwargs: Any) -> None:
     temperature = kwargs[ATTR_TEMPERATURE]
     self._attr_target_temperature = temperature
+    if not self._attr_is_on:
+      return
     # 单一温度
     msg_data = {"targetTemperature": int(self._attr_target_temperature)}
     _LOGGER.debug("msg_data:%s", msg_data)
