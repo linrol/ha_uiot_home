@@ -4,7 +4,7 @@ import json
 import logging
 
 from homeassistant.components.climate import ClimateEntity, ClimateEntityFeature, HVACMode
-from homeassistant.const import ATTR_TEMPERATURE
+from homeassistant.const import ATTR_TEMPERATURE, UnitOfTemperature
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 
@@ -105,6 +105,7 @@ class SmartAC(ClimateEntity):
     self._uiot_dev: UIOTDevice = uiot_dev
     self._attr_min_temp = 16
     self._attr_max_temp = 32
+    self._attr_temperature_unit = UnitOfTemperature.CELSIUS
     self._attr_supported_features = (ClimateEntityFeature.TURN_ON |
                                      ClimateEntityFeature.TURN_OFF |
                                      ClimateEntityFeature.FAN_MODE |
