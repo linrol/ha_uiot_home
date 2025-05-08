@@ -107,6 +107,7 @@ class SmartAC(ClimateEntity):
     self._uiot_dev: UIOTDevice = uiot_dev
     self._attr_min_temp = 16
     self._attr_max_temp = 32
+    self._attr_target_temperature_step = 1
     self._attr_temperature_unit = UnitOfTemperature.CELSIUS
     self._attr_supported_features = (ClimateEntityFeature.FAN_MODE |
                                      ClimateEntityFeature.TARGET_TEMPERATURE)
@@ -281,7 +282,7 @@ class SmartAC(ClimateEntity):
     temperature = kwargs[ATTR_TEMPERATURE]
     self._attr_target_temperature = temperature
     # 单一温度
-    msg_data = {"targetTemperature": self._attr_target_temperature}
+    msg_data = {"targetTemperature": int(self._attr_target_temperature)}
     _LOGGER.debug("msg_data:%s", msg_data)
     await self._uiot_dev.dev_control_real(self._attr_unique_id, msg_data)
     self.async_write_ha_state()
