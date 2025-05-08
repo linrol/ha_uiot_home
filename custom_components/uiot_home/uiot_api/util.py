@@ -124,7 +124,8 @@ def phase_dev_list(list_data: str) -> list:
         "wc_double_motor_control_panel": "cover",
         "wc_dream_curtain_motor": "cover",
         "wc_smart_curtain_motor_box": "cover",
-        "hvac_fresh_air_3h1_th": "fan"
+        "hvac_fresh_air_3h1_th": "fan",
+        "hvac_smart_gateway_engineering_ac": "climate"
     }
 
     MODEL_ABILITY_MAP = {

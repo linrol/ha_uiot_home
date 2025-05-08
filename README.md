@@ -71,4 +71,5 @@ After logging in successfully, a list of all host families under the user's acco
 | Dream curtain motor                      | on、off、pause、opening and closing degree、rotation angle                                 |
 | Six-in-one air sensor                    | light、 temperature、 humidity、co2、pm2.5、noise                                           |
 | Fresh air                                | on、off、set speed                                                                       |
+| Climate                                  | on、off、temperature、 speed、 fan mode、 hvac mode                                         |
 
