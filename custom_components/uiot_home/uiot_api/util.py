@@ -124,6 +124,18 @@ def phase_dev_list(list_data: str) -> list:
         "wc_double_motor_control_panel": "cover",
         "wc_dream_curtain_motor": "cover",
         "wc_smart_curtain_motor_box": "cover",
+        "hs_smoke_detector": "senser",
+        "hs_water_leak_detector": "senser",
+        "hs_flammable_gas_detector": "senser",
+        "hs_gas_leak_detector": "senser",
+        "hs_sos_button": "senser",
+        "hvac_thermostat_3h1_e3_child_ac": "climate",
+        "hvac_thermostat_3h1_e3_child_fair_power": "fan",
+        "hvac_thermostat_3h1_e3_child_wfh": "water_heater",
+        "hvac_smart_gateway_engineering_ac": "climate",
+        "hvac_smart_gateway_general_ac": "climate",
+        "hvac_fresh_air_3h1_th": "fan",
+        "hvac_ac_e3": "climate",
     }
 
     MODEL_ABILITY_MAP = {
@@ -297,6 +309,87 @@ def phase_dev_list(list_data: str) -> list:
             "curtainPosition": 0,
             "motorSwitch": "off",
         },
+        "hs_smoke_detector": {
+            "batteryPercentage": "100",
+            "alarmState": "normal",
+        },
+        "hs_water_leak_detector": {
+            "batteryPercentage": "100",
+            "alarmState": "normal",
+        },
+        "hs_flammable_gas_detector": {
+            "alarmState": "normal",
+        },
+        "hs_gas_leak_detector": {
+            "alarmState": "normal",
+        },
+        "hs_sos_button": {
+            "batteryPercentage": "100",
+            "alarmState": "normal",
+        },
+        "hvac_thermostat_3h1_e3_child_ac": {
+            "currentTemperature": "25",
+            "targetTemperature": "26",
+            "thermostatMode": "cool",
+            "powerSwitch": "off",
+            "windSpeed": "low",
+            "temperature_max": 32,
+            "temperature_min": 16,
+            "hvac_modes": ["off", "cool", "heat", "dry", "fan_only"],
+            "fan_modes": ["low", "medium", "high", "auto"],
+        },
+        "hvac_thermostat_3h1_e3_child_fair_power": {
+            "powerSwitch": "off",
+            "windSpeed": "low",
+            "fan_modes": ["low", "mid", "high"],
+        },
+        "hvac_thermostat_3h1_e3_child_wfh": {
+            "currentTemperature": "25",
+            "targetTemperature": "26",
+            "thermostatMode": "cool",
+            "powerSwitch": "off",
+            "temperature_max": 32,
+            "temperature_min": 16,
+            "value_switch_type": "waterValveSwitch",
+        },
+        "hvac_smart_gateway_engineering_ac": {
+            "currentTemperature": "25",
+            "targetTemperature": "26",
+            "thermostatMode": "cool",
+            "powerSwitch": "off",
+            "windSpeed": "low",
+            "temperature_max": 32,
+            "temperature_min": 16,
+            "hvac_modes": ["off", "cool", "heat", "dry", "fan_only"],
+            "fan_modes": ["low", "medium", "high", "auto"],
+        },
+        "hvac_smart_gateway_general_ac": {
+            "currentTemperature": "25",
+            "targetTemperature": "26",
+            "thermostatMode": "cool",
+            "powerSwitch": "off",
+            "windSpeed": "low",
+            "temperature_max": 32,
+            "temperature_min": 16,
+            "hvac_modes": ["off", "cool", "heat", "dry", "fan_only"],
+            "fan_modes": ["low", "medium", "high", "auto"],
+        },
+        "hvac_fresh_air_3h1_th": {
+            "powerSwitch": "off",
+            "windSpeed": "low",
+            "fan_modes": ["low", "mid", "high"],
+        },
+        "hvac_ac_e3": {
+            "currentTemperature": "25",
+            "targetTemperature": "26",
+            "thermostatMode": "cool",
+            "powerSwitch": "off",
+            "windSpeed": "low",
+            "temperature_max": 32,
+            "temperature_min": 16,
+            "hvac_modes": ["off", "cool", "heat", "dry", "fan_only"],
+            "fan_modes": ["low", "medium", "high", "auto"],
+        },
     }
 
     # 辅助函数：初始化 properties
@@ -308,6 +401,12 @@ def phase_dev_list(list_data: str) -> list:
         for key, value in default_properties.items():
             if key not in device["properties"]:
                 device["properties"][key] = value
+        if (
+            "humanActiveState" in device["properties"]
+            and "humanDetectedState" in device["properties"]
+        ):
+            if device["properties"]["humanDetectedState"] == "noPerson":
+                device["properties"]["humanActiveState"] = "noFeatures"
 
     # 主逻辑
     filtered_devices = []

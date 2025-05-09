@@ -214,7 +214,55 @@ def senser_data_parse_list(senser_data, entities, hass: HomeAssistant) -> list:
         senser_data["icon"] = "mdi:chemical-weapon"
         entities.append(GenericSensor(senser_data, hass))
 
+    if "alarmState" in properties:
+        alarmState = properties.get("alarmState")
+        senser_data["name"] = f"{deviceName}：报警状态"
+        senser_data["sensor_type"] = "alarmState"
+        senser_data["device_class"] = None
+        senser_data["unit_of_measurement"] = None
+        senser_data["state_class"] = None
+        if alarmState == "normal":
+            senser_data["cur_value"] = "正常"
+            senser_data["icon"] = "mdi:shield-alert"
+        else:
+            senser_data["cur_value"] = "报警"
+            senser_data["icon"] = "mdi:shield-alert"
+        entities.append(GenericSensor(senser_data, hass))
+
     return entities
+
+
+def judge_humanActiveState(humanActiveState: str) -> str:
+    """Judge humanActiveState."""
+    if humanActiveState == "inactivity":
+        cur_value = "静止"
+    elif humanActiveState == "noFeatures":
+        cur_value = "无特征"
+    elif humanActiveState == "active":
+        cur_value = "活跃"
+    else:
+        cur_value = "无特征"
+    return cur_value
+
+
+def judge_alarmState(alarmState: str) -> str:
+    """Judge alarmState."""
+    if alarmState == "normal":
+        cur_value = "正常"
+    else:
+        cur_value = "报警"
+    return cur_value
+
+
+def judge_curtainAlarmState(curtainAlarmState: str) -> str:
+    """Judge curtainAlarmState."""
+    if curtainAlarmState == "out":
+        cur_value = "外出"
+    elif curtainAlarmState == "intrude":
+        cur_value = "闯入"
+    else:
+        cur_value = "正常"
+    return cur_value
 
 
 def update_senser_status(self, payload_str):
@@ -227,12 +275,7 @@ def update_senser_status(self, payload_str):
         self._value = payload_str.get("humanDistanceState", "")
     elif self._sensor_type == "security_alarm_state":
         curtainAlarmState = payload_str.get("curtainAlarmState")
-        if curtainAlarmState == "out":
-            self._value = "外出"
-        elif curtainAlarmState == "intrude":
-            self._value = "闯入"
-        else:
-            self._value = "正常"
+        self._value = judge_curtainAlarmState(curtainAlarmState)
     elif self._sensor_type == "human_detected_state":
         humanDetectedState = payload_str.get("humanDetectedState")
         if humanDetectedState == "havePerson":
@@ -241,10 +284,9 @@ def update_senser_status(self, payload_str):
             self._value = "无人"
     elif self._sensor_type == "human_active_state":
         humanActiveState = payload_str.get("humanActiveState")
-        if humanActiveState == "inactivity":
-            self._value = "静止"
-        else:
-            self._value = "活跃"
+        if payload_str.get("humanDetectedState") == "noPerson":
+            humanActiveState = "noFeatures"
+        self._value = judge_humanActiveState(humanActiveState)
     elif self._sensor_type == "contact":
         contactState = payload_str.get("contactState")
         if contactState:
@@ -273,6 +315,9 @@ def update_senser_status(self, payload_str):
         self._value = payload_str.get("tvoc", "")
     elif self._sensor_type == "formaldehyde":
         self._value = payload_str.get("formaldehyde", "")
+    elif self._sensor_type == "alarmState":
+        alarmState = payload_str.get("alarmState")
+        self._value = judge_alarmState(alarmState)
     if self._value == "":
         self._value = "0"
 
@@ -310,7 +355,7 @@ async def async_setup_entry(
                     _LOGGER.debug("senser")
                     device_data.append(device)
 
-            new_entities = []
+            entities = []
 
             for data in device_data:
                 name = data.get("deviceName", "")
@@ -318,10 +363,10 @@ async def async_setup_entry(
                 _LOGGER.debug("name:%s", name)
                 _LOGGER.debug("deviceId:%d", deviceId)
                 if not is_entity_exist(hass, deviceId):
-                    new_entities = senser_data_parse_list(data, new_entities, hass)
+                    entities = senser_data_parse_list(data, entities, hass)
 
-            if new_entities:
-                async_add_entities(new_entities)
+            if entities:
+                async_add_entities(entities)
 
         except Exception as e:
             _LOGGER.error("Error processing config update: %s", e)
@@ -408,7 +453,7 @@ class GenericSensor(SensorEntity):
             _LOGGER.warning("Received empty payload")
             return
 
-        # _LOGGER.debug("收到设备状态更新: %s", payload_str)
+        _LOGGER.debug("收到设备状态更新: %s", payload_str)
         update_senser_status(self, payload_str)
 
         # _LOGGER.debug("self._value: %s", self._value)
@@ -440,4 +485,18 @@ class GenericSensor(SensorEntity):
             if self.native_value == "传感设备":
                 return "mdi:gauge"
             return "mdi:shield-home"
+        if self._sensor_type == "battery_level":
+            _value = int(self.native_value)
+            if _value > 90:
+                self._attr_icon = "mdi:battery"
+            elif _value > 70:
+                self._attr_icon = "mdi:battery-80"
+            elif _value > 50:
+                self._attr_icon = "mdi:battery-60"
+            elif _value > 30:
+                self._attr_icon = "mdi:battery-40"
+            elif _value > 15:
+                self._attr_icon = "mdi:battery-20"
+            else:
+                self._attr_icon = "mdi:battery-alert"
         return self._attr_icon

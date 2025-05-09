@@ -163,6 +163,7 @@ class UIOTMqttClient:
             _LOGGER.debug("新设备入网")
             msg_data = json.loads(msg_data)
             data = msg_data.get("data")
+            _LOGGER.debug("data:%s", data)
             json_string = json.dumps(data)
             deviceList = phase_dev_list(json_string)
             _LOGGER.debug("deviceList:%s", deviceList)

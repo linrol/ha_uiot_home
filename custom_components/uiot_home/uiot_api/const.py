@@ -13,4 +13,12 @@ APP_KEY = "8vj99vwcn9qxk295oqmq7q3p2ni417q7"
 APP_SECRET = "i6AFqgDm8Bg2m9qrvYiqW3BqRhB3NEbN"
 MQTT_BROKER = "bmqt.unisiot.com"
 MQTT_PORT = 51322
-PLATFORMS = [Platform.COVER, Platform.LIGHT, Platform.SENSOR, Platform.SWITCH]
+PLATFORMS = [
+    Platform.CLIMATE,
+    Platform.COVER,
+    Platform.FAN,
+    Platform.LIGHT,
+    Platform.SENSOR,
+    Platform.SWITCH,
+    Platform.WATER_HEATER,
+]

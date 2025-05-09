@@ -1,9 +1,9 @@
-"""Switch platform for UIOT integration."""
+"""Fan platform for UIOT integration."""
 
 import json
 import logging
 
-from homeassistant.components.switch import SwitchEntity
+from homeassistant.components.fan import FanEntity, FanEntityFeature
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -18,31 +18,27 @@ async def async_setup_entry(
     hass: HomeAssistant, entry, async_add_entities: AddEntitiesCallback
 ) -> None:
     """Set up the Switch platform from a config entry."""
-    _LOGGER.debug("async_setup_entry switch")
+    _LOGGER.debug("async_setup_entry fan")
 
     devices_data = hass.data[DOMAIN].get("devices", [])
 
     device_data = []
     for device in devices_data:
-        if device.get("type") == "switch":
-            _LOGGER.debug("switch")
+        if device.get("type") == "fan":
+            _LOGGER.debug("fan")
             device_data.append(device)
 
     entities = []
-    deviceName = ""
-    for switch_data in device_data:
-        name = switch_data.get("deviceName", "")
-        deviceId = switch_data.get("deviceId", "")
-        channelNum = switch_data.get("channelNum", "")
+    for c_data in device_data:
+        name = c_data.get("deviceName", "")
+        deviceId = c_data.get("deviceId", "")
+        channelNum = c_data.get("channelNum", "")
         _LOGGER.debug("name:%s", name)
         _LOGGER.debug("deviceId:%d", deviceId)
         _LOGGER.debug("channelNum:%d", channelNum)
-        if channelNum == 0:
-            deviceName = name
-        else:
-            uiot_dev: UIOTDevice = hass.data[DOMAIN].get("uiot_dev")
-            switch_data["mainDevieName"] = deviceName
-            entities.append(Switch(switch_data, uiot_dev, hass))
+
+        uiot_dev: UIOTDevice = hass.data[DOMAIN].get("uiot_dev")
+        entities.append(Fan(c_data, uiot_dev, hass))
 
     async_add_entities(entities)
 
@@ -54,8 +50,8 @@ async def async_setup_entry(
             devices_data = msg
             device_data = []
             for device in devices_data:
-                if device.get("type") == "switch":
-                    _LOGGER.debug("switch")
+                if device.get("type") == "fan":
+                    _LOGGER.debug("fan")
                     _LOGGER.debug("devices_data %s", devices_data)
                     device_data.append(device)
 
@@ -68,15 +64,9 @@ async def async_setup_entry(
                 _LOGGER.debug("name:%s", name)
                 _LOGGER.debug("deviceId:%d", deviceId)
                 _LOGGER.debug("channelNum:%d", channelNum)
-                if channelNum == 0:
-                    deviceName = name
-                    mainDeviceId = deviceId
-                else:
-                    uiot_dev: UIOTDevice = hass.data[DOMAIN].get("uiot_dev")
-                    s_data["mainDevieName"] = deviceName
-                    s_data["mainDeviceId"] = str(mainDeviceId)
-                    if not is_entity_exist(hass, deviceId):
-                        new_entities.append(Switch(s_data, uiot_dev, hass))
+                uiot_dev: UIOTDevice = hass.data[DOMAIN].get("uiot_dev")
+                if not is_entity_exist(hass, deviceId):
+                    new_entities.append(Fan(s_data, uiot_dev, hass))
 
             if new_entities:
                 async_add_entities(new_entities)
@@ -89,52 +79,61 @@ async def async_setup_entry(
     async_dispatcher_connect(hass, signal, handle_config_update)
 
 
-class Switch(SwitchEntity):
-    """Representation of a UIOT home Switch."""
+class Fan(FanEntity):
+    """Representation of a UIOT home Fan."""
 
-    def __init__(self, switch_data, uiot_dev, hass: HomeAssistant) -> None:
-        """Initialize the switch."""
+    def __init__(self, c_data, uiot_dev, hass: HomeAssistant) -> None:
+        """Initialize the Fan."""
         self.hass = hass
-        self._attr_name = switch_data.get("deviceName", "")
-        self._attr_unique_id = str(switch_data.get("deviceId", ""))
-        self.mac = switch_data.get("deviceMac", "")
-        if self.mac:
-            pass
-        else:
-            self.mac = switch_data.get("mainDeviceId", "")
+        self._attr_name = c_data.get("deviceName", "")
+        self._attr_unique_id = str(c_data.get("deviceId", ""))
+        self.mac = self._attr_unique_id
         self._uiot_dev: UIOTDevice = uiot_dev
-        properties_data = switch_data.get("properties", "")
-        if properties_data:
-            powerSwitch = properties_data.get("powerSwitch", "")
-            if powerSwitch == "off":
-                self._attr_is_on = False
-            else:
-                self._attr_is_on = True
-
-        deviceOnlineState = switch_data.get("deviceOnlineState", "")
+        properties_data = c_data.get("properties", "")
+        power_switch = properties_data.get("powerSwitch", "off")
+        if power_switch == "off":
+            self._attr_is_on = False
+        else:
+            self._attr_is_on = True
+        deviceOnlineState = c_data.get("deviceOnlineState", "")
         if deviceOnlineState == 0:
             self._attr_available = False
         else:
             self._attr_available = True
         _LOGGER.debug("_attr_available=%d", self._attr_available)
-
-        deviceName = switch_data.get("mainDevieName", "")
-        if deviceName:
-            _LOGGER.debug("deviceName=%s", deviceName)
-        else:
-            deviceName = self._attr_name
+        self._attr_supported_features = (
+            FanEntityFeature.SET_SPEED
+            | FanEntityFeature.TURN_OFF
+            | FanEntityFeature.TURN_ON
+        )
+        self._attr_speed_count = 100
+        deviceName = self._attr_name
         self._attr_device_info = {
             "identifiers": {(f"{DOMAIN}", f"{self.mac}")},
             "name": f"{deviceName}",
             "manufacturer": f"{COMPANY}",
-            "suggested_area": f"{switch_data.get('roomName', "")}",
-            "model": f"{switch_data.get('model', "")}",
-            "sw_version": f"{switch_data.get('softwareVersion', "")}",
-            "hw_version": f"{switch_data.get('hardwareVersion', "")}",
+            "suggested_area": f"{c_data.get('roomName', "")}",
+            "model": f"{c_data.get('model', "")}",
+            "sw_version": f"{c_data.get('softwareVersion', "")}",
+            "hw_version": f"{c_data.get('hardwareVersion', "")}",
         }
         _LOGGER.debug("初始化设备: %s", self._attr_name)
         _LOGGER.debug("deviceId=%s", self._attr_unique_id)
         _LOGGER.debug("mac=%s", self.mac)
+
+        if "fan_modes" in properties_data:
+            self._fan_modes = properties_data.get("fan_modes", "")
+        else:
+            self._fan_modes = ["low", "mid", "high"]
+        self._percentage_step = 100 / len(self._fan_modes)
+        _LOGGER.debug("self._percentage_step=%d", self._percentage_step)
+        _LOGGER.debug("fan_mode=%s", self._fan_modes[2])
+
+        windSpeed = properties_data.get("windSpeed", "low")
+        if windSpeed in self._fan_modes:
+            self._fan_speed = (
+                self._fan_modes.index(windSpeed) + 1
+            ) * self._percentage_step
 
         # 订阅状态主题以监听本地控制的变化
         signal = "mqtt_message_received_state_report"
@@ -181,20 +180,19 @@ class Switch(SwitchEntity):
 
         _LOGGER.debug("收到设备状态更新: %s", payload_str)
 
-        if payload_str.get("powerSwitch", ""):
+        if "powerSwitch" in payload_str:
             power_switch = payload_str.get("powerSwitch", "")
-            if power_switch == "on":
-                powerSwitch_status = True
-            elif power_switch == "off":
-                powerSwitch_status = False
+            if power_switch == "off":
+                self._attr_is_on = False
             else:
-                powerSwitch_status = False
-            if self._attr_is_on == powerSwitch_status:
-                _LOGGER.debug("powerSwitch 不需要更新 !")
-            else:
-                self._attr_is_on = powerSwitch_status
-                _LOGGER.debug("_attr_is_on:%s", self._attr_is_on)
-
+                self._attr_is_on = True
+        if "windSpeed" in payload_str:
+            windSpeed = payload_str.get("windSpeed", "")
+            if windSpeed in self._fan_modes:
+                self._fan_speed = (
+                    self._fan_modes.index(windSpeed) + 1
+                ) * self._percentage_step
+        _LOGGER.debug("_fan_speed: %d", self._fan_speed)
         deviceOnlineState = data.get("deviceOnlineState", "")
         if deviceOnlineState == 0:
             self._attr_available = False
@@ -205,27 +203,43 @@ class Switch(SwitchEntity):
 
     @property
     def is_on(self) -> bool:
-        """Return true if switch is on."""
+        """Fan is on."""
         return self._attr_is_on
 
-    async def async_turn_on(self, **kwargs) -> None:
-        """Turn the switch on."""
+    @property
+    def percentage(self) -> int:
+        """Fan fan speed."""
+        return self._fan_speed
+
+    async def async_turn_on(self, percentage, preset_mode, **kwargs) -> None:
+        """Turn the fan on."""
         msg_data = {}
         msg_data["powerSwitch"] = "on"
-        self._attr_is_on = True
         _LOGGER.debug("msg_data:%s", msg_data)
         await self._uiot_dev.dev_control_real(self._attr_unique_id, msg_data)
         self.async_write_ha_state()
 
     async def async_turn_off(self, **kwargs) -> None:
-        """Turn the switch off."""
+        """Turn the fan off."""
         msg_data = {}
         msg_data["powerSwitch"] = "off"
-        self._attr_is_on = False
         _LOGGER.debug("msg_data:%s", msg_data)
         await self._uiot_dev.dev_control_real(self._attr_unique_id, msg_data)
         self.async_write_ha_state()
 
-    async def async_update(self) -> None:
-        """Fetch new state data for this switch."""
-        # _LOGGER.info("Updating switch state.")
+    async def async_set_percentage(self, percentage: int) -> None:
+        """Fan async set percentage."""
+        _LOGGER.debug("percentage:%d", percentage)
+        self._fan_speed = percentage
+        if percentage == 0:
+            await self.async_turn_off()
+        else:
+            msg_data = {}
+            _index = int(percentage / self._percentage_step)
+            if _index >= len(self._fan_modes):
+                _index = len(self._fan_modes) - 1
+            msg_data["windSpeed"] = self._fan_modes[_index]
+            _LOGGER.debug("msg_data:%s", msg_data)
+            uid = self._attr_unique_id
+            await self._uiot_dev.dev_control_real(uid, msg_data)
+            self.async_write_ha_state()

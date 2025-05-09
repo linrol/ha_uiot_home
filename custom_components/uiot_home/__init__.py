@@ -162,12 +162,12 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if DOMAIN in hass.data and "devices" in hass.data[DOMAIN]:
         del hass.data[DOMAIN]["devices"]
 
-    cur_entry_id = "cur_" + entry.entry_id
-    if DOMAIN in hass.data and "mqtt_client" in hass.data[DOMAIN][cur_entry_id]:
-        client: UIOTMqttClient = hass.data[DOMAIN][cur_entry_id]["mqtt_client"]
+    _entry_id = "cur_" + entry.entry_id
+    if DOMAIN in hass.data and "mqtt_client" in hass.data[DOMAIN][_entry_id]:
+        client: UIOTMqttClient = hass.data[DOMAIN][_entry_id]["mqtt_client"]
         client.destrory_client()
         # 清理引用
-        del hass.data[DOMAIN][cur_entry_id]["mqtt_client"]
+        del hass.data[DOMAIN][_entry_id]["mqtt_client"]
         _LOGGER.debug("MQTT client destroyed successfully")
     else:
         _LOGGER.debug("MQTT client not found in hass.data")

@@ -222,6 +222,11 @@ class Cover(CoverEntity, RestoreEntity):
             else:
                 self._is_opening = False
                 self._is_closing = True
+                if "curtainPosition" not in payload_str:
+                    self._current_position = 0
+            if self._current_position in (0, 100):
+                self._is_opening = False
+                self._is_closing = False
 
         deviceOnlineState = data.get("deviceOnlineState", "")
         if deviceOnlineState == 0:
