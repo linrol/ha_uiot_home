@@ -81,4 +81,7 @@ After logging in successfully, a list of all host families under the user's acco
 | Air conditioning thermostat E series                         | on、off、mode、 temperature、wind speed                      |
 | Fresh air temperature controller E series                    | on、off、wind speed                                          |
 | Fresh air temperature controller                             | on、off、wind speed                                          |
+| Water heating thermostat E                                   | on, off, temperature                                         |
+| Water floor heating thermostat                               | on, off, temperature                                         |
+| Water floor heating thermostat (3H1)                         | on, off, temperature                                         |
 

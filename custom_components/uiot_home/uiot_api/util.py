@@ -136,6 +136,9 @@ def phase_dev_list(list_data: str) -> list:
         "hvac_smart_gateway_general_ac": "climate",
         "hvac_fresh_air_3h1_th": "fan",
         "hvac_ac_e3": "climate",
+        "hvac_wfh_e3": "water_heater",
+        "hvac_water_floor_heating_3h1_th": "water_heater",
+        "hvac_water_floor_heating_th": "water_heater",
     }
 
     MODEL_ABILITY_MAP = {
@@ -389,6 +392,33 @@ def phase_dev_list(list_data: str) -> list:
             "temperature_min": 16,
             "hvac_modes": ["off", "cool", "heat", "dry", "fan_only"],
             "fan_modes": ["low", "medium", "high", "auto"],
+        },
+        "hvac_wfh_e3": {
+            "currentTemperature": "25",
+            "targetTemperature": "26",
+            "thermostatMode": "cool",
+            "powerSwitch": "off",
+            "temperature_max": 32,
+            "temperature_min": 16,
+            "value_switch_type": "waterValveSwitch",
+        },
+        "hvac_water_floor_heating_3h1_th": {
+            "currentTemperature": "25",
+            "targetTemperature": "26",
+            "thermostatMode": "cool",
+            "powerSwitch": "off",
+            "temperature_max": 32,
+            "temperature_min": 16,
+            "value_switch_type": "waterValveSwitch",
+        },
+        "hvac_water_floor_heating_th": {
+            "currentTemperature": "25",
+            "targetTemperature": "26",
+            "thermostatMode": "cool",
+            "powerSwitch": "off",
+            "temperature_max": 32,
+            "temperature_min": 16,
+            "value_switch_type": "waterValveSwitch",
         },
     }
 
