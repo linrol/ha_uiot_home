@@ -240,7 +240,7 @@ class Climate(ClimateEntity):
                     self._cur_current_temperature = float(cTemperature)
                 if "targetTemperature" in payload_str:
                     tTemperature = payload_str.get("targetTemperature", "")
-                    self._cur_target_temperature = float(tTemperature)
+                    self._cur_current_temperature = float(tTemperature)
         if "windSpeed" in payload_str:
             windSpeed = payload_str.get("windSpeed", "")
             self._fan_mode = judge_fanMode(windSpeed)
@@ -309,6 +309,7 @@ class Climate(ClimateEntity):
         msg_data = {}
         msg_data["targetTemperature"] = str(temperature)
         _LOGGER.debug("msg_data:%s", msg_data)
+        self._cur_target_temperature = float(temperature)
         await self._uiot_dev.dev_control_real(self._attr_unique_id, msg_data)
 
     async def async_set_hvac_mode(self, hvac_mode: HVACMode) -> None:

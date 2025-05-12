@@ -129,6 +129,7 @@ class Fan(FanEntity):
         _LOGGER.debug("self._percentage_step=%d", self._percentage_step)
         _LOGGER.debug("fan_mode=%s", self._fan_modes[2])
 
+        self._fan_speed = 0
         windSpeed = properties_data.get("windSpeed", "low")
         if windSpeed in self._fan_modes:
             self._fan_speed = (
