@@ -210,13 +210,9 @@ class Cover(CoverEntity, RestoreEntity):
             motorSwitch = payload_str.get("motorSwitch", "")
             _LOGGER.debug("motorSwitch:%s", motorSwitch)
             if motorSwitch == "on":
-                self._is_opening = True
-                self._is_closing = False
                 if "curtainPosition" not in payload_str:
                     self._current_position = 100
             elif motorSwitch == "pause":
-                self._is_opening = False
-                self._is_closing = False
                 if "curtainPosition" not in payload_str:
                     self._current_position = 50
             else:
@@ -224,10 +220,23 @@ class Cover(CoverEntity, RestoreEntity):
                 self._is_closing = True
                 if "curtainPosition" not in payload_str:
                     self._current_position = 0
-            if self._current_position in (0, 100):
+        if "motorState" in payload_str:
+            motorState = payload_str.get("motorState", "")
+            if motorState == "opening":
+                self._is_opening = True
+                self._is_closing = False
+            elif motorState == "stoped":
                 self._is_opening = False
                 self._is_closing = False
-
+            elif motorState == "closing":
+                self._is_opening = False
+                self._is_closing = True
+            else:
+                self._is_opening = False
+                self._is_closing = False
+        else:
+            self._is_opening = False
+            self._is_closing = False
         deviceOnlineState = data.get("deviceOnlineState", "")
         if deviceOnlineState == 0:
             self._attr_available = False
