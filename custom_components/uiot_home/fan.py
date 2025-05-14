@@ -103,6 +103,7 @@ class Fan(FanEntity):
         _LOGGER.debug("_attr_available=%d", self._attr_available)
         self._attr_supported_features = (
             FanEntityFeature.SET_SPEED
+            | FanEntityFeature.PRESET_MODE
             | FanEntityFeature.TURN_OFF
             | FanEntityFeature.TURN_ON
         )
@@ -134,7 +135,8 @@ class Fan(FanEntity):
             self._fan_speed = (
                 self._fan_modes.index(windSpeed) + 1
             ) * self._percentage_step
-
+        self._preset_modes = self._fan_modes
+        self._attr_preset_mode = windSpeed
         # 订阅状态主题以监听本地控制的变化
         signal = "mqtt_message_received_state_report"
         async_dispatcher_connect(hass, signal, self._handle_mqtt_message)
@@ -192,6 +194,7 @@ class Fan(FanEntity):
                 self._fan_speed = (
                     self._fan_modes.index(windSpeed) + 1
                 ) * self._percentage_step
+            self._attr_preset_mode = windSpeed
         _LOGGER.debug("_fan_speed: %d", self._fan_speed)
         deviceOnlineState = data.get("deviceOnlineState", "")
         if deviceOnlineState == 0:
@@ -200,6 +203,21 @@ class Fan(FanEntity):
             self._attr_available = True
 
         self.async_write_ha_state()
+
+    @property
+    def supported_features(self):
+        """Fan supported features."""
+        return self._attr_supported_features
+
+    @property
+    def preset_mode(self):
+        """Return the current preset mode."""
+        return self._attr_preset_mode
+
+    @property
+    def preset_modes(self):
+        """Return the current preset mode."""
+        return self._preset_modes
 
     @property
     def is_on(self) -> bool:
@@ -243,3 +261,14 @@ class Fan(FanEntity):
             uid = self._attr_unique_id
             await self._uiot_dev.dev_control_real(uid, msg_data)
             self.async_write_ha_state()
+
+    async def async_set_preset_mode(self, preset_mode: str):
+        """Fan async set preset mode."""
+        msg_data = {}
+        msg_data["windSpeed"] = preset_mode
+        _LOGGER.debug("msg_data:%s", msg_data)
+        uid = self._attr_unique_id
+        await self._uiot_dev.dev_control_real(uid, msg_data)
+        self.async_write_ha_state()
+        _LOGGER.debug("preset_mode:%s", preset_mode)
+        self._attr_preset_mode = preset_mode

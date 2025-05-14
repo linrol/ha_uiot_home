@@ -22,7 +22,7 @@ from .uiot_api.uiot_config import UIOTConfig
 from .uiot_api.uiot_device import UIOTDevice, remove_device
 from .uiot_api.uiot_host import UIOTHost
 from .uiot_api.uiot_mqtt import UIOTMqttClient
-from .uiot_api.util import phase_dev_list
+from .uiot_api.util import phase_dev_list, phase_smart_list
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -128,6 +128,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         if res:
             remove_device(hass, entry.entry_id)
             device_list = phase_dev_list(res)
+            smart_res = await uiot_host.uiot_get_host_smart_async()
+            if smart_res:
+                _LOGGER.debug("smart Res:%s", smart_res)
+                device_list = phase_smart_list(smart_res, device_list)
             _LOGGER.debug("dev list:%s", device_list)
             hass.data[DOMAIN]["devices"] = device_list
             break

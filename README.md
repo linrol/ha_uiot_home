@@ -82,6 +82,19 @@ After logging in successfully, a list of all host families under the user's acco
 | Fresh air temperature controller E series                    | on、off、wind speed                                          |
 | Fresh air temperature controller                             | on、off、wind speed                                          |
 | Water heating thermostat E                                   | on, off, temperature                                         |
-| Water floor heating thermostat                               | on, off, temperature                                         |
-| Water floor heating thermostat (3H1)                         | on, off, temperature                                         |
+| Water floor heating thermostat                               | on、 off、 temperature                                       |
+| Water floor heating thermostat (3H1)                         | on、 off、temperature                                        |
+| Intelligent socket                                           | on、off                                                      |
+| Infrared smart socket                                        | on、 off、Codebase air conditioning                          |
+| Codebase air conditioning                                    | on、off、mode、 temperature、wind speed                      |
+| Scene                                                        | Synchronize the scenarios set by the UIOT APP                |
 
+## FAQ
+
+### Q1:4.0 Account login prompt: Failed to obtain the token
+
+- For the 4.0 host (UIOT Smart Home App), please check if you have registered an account for version 5.0 (Super Smart Home App). If you have, you need to log in to the Super Smart Home App to cancel the account for version 5.0
+
+### Q2:The home name interface does not show the host name, and when you click Submit, an Unkown error occurred appears
+
+- Check the "About" section on the App to see if an alias has been set for the server. If no alias has been set, you need to set an individual name and log in again to submit

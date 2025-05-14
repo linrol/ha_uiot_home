@@ -147,14 +147,21 @@ class Climate(ClimateEntity):
         self._attr_target_temperature_step = 1
         self._attr_hvac_modes = properties_data.get("hvac_modes", "")
         self._attr_fan_modes = properties_data.get("fan_modes", "")
-        thermostatMode = properties_data.get("thermostatMode", "auto")
+        if "thermostatMode" in properties_data:
+            thermostatMode = properties_data.get("thermostatMode", "auto")
+            self._workMode = "thermostatMode"
+        else:
+            thermostatMode = properties_data.get("workMode", "auto")
+            self._workMode = "workMode"
         self._cur_hvac_modes = judge_thermostatMode(thermostatMode)
         self._cur_target_temperature = float(
             properties_data.get("targetTemperature", "20.0")
         )
-        self._cur_current_temperature = float(
-            properties_data.get("currentTemperature", "20.0")
-        )
+        self._cur_current_temperature = 0
+        if "currentTemperature" in properties_data:
+            self._cur_current_temperature = float(
+                properties_data.get("currentTemperature", "20.0")
+            )
         windSpeed = properties_data.get("windSpeed", "low")
         self._fan_mode = judge_fanMode(windSpeed)
         _LOGGER.debug("hvac_modes=%s", self._attr_hvac_modes)
@@ -233,7 +240,10 @@ class Climate(ClimateEntity):
             if power_switch == "off":
                 self._cur_hvac_modes = HVACMode.OFF
             else:
-                thermostatMode = payload_str.get("thermostatMode", "")
+                if "thermostatMode" in payload_str:
+                    thermostatMode = payload_str.get("thermostatMode", "")
+                else:
+                    thermostatMode = payload_str.get("workMode", "")
                 self._cur_hvac_modes = judge_thermostatMode(thermostatMode)
                 if "currentTemperature" in payload_str:
                     cTemperature = payload_str.get("currentTemperature", "")
@@ -280,7 +290,9 @@ class Climate(ClimateEntity):
     @property
     def current_temperature(self) -> float | None:
         """Climate current temperature."""
-        return self._cur_current_temperature
+        if self._cur_current_temperature > 0:
+            return self._cur_current_temperature
+        return None
 
     async def async_turn_on(self, **kwargs) -> None:
         """Climate turn on."""
@@ -332,7 +344,7 @@ class Climate(ClimateEntity):
                 thermostatMode = "dehumidification"
             else:
                 thermostatMode = "auto"
-            msg_data["thermostatMode"] = thermostatMode
+            msg_data[self._workMode] = thermostatMode
             _LOGGER.debug("msg_data:%s", msg_data)
             uid = self._attr_unique_id
             await self._uiot_dev.dev_control_real(uid, msg_data)
