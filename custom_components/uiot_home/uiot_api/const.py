@@ -18,6 +18,7 @@ PLATFORMS = [
     Platform.COVER,
     Platform.FAN,
     Platform.LIGHT,
+    Platform.SCENE,
     Platform.SENSOR,
     Platform.SWITCH,
     Platform.WATER_HEATER,

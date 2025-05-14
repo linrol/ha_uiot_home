@@ -139,6 +139,9 @@ def phase_dev_list(list_data: str) -> list:
         "hvac_wfh_e3": "water_heater",
         "hvac_water_floor_heating_3h1_th": "water_heater",
         "hvac_water_floor_heating_th": "water_heater",
+        "ha_smart_socket": "switch",
+        "ha_ir_socket_kookong": "switch",
+        "hvac_ir_air_conditioner_maku": "climate",
     }
 
     MODEL_ABILITY_MAP = {
@@ -420,6 +423,16 @@ def phase_dev_list(list_data: str) -> list:
             "temperature_min": 16,
             "value_switch_type": "waterValveSwitch",
         },
+        "hvac_ir_air_conditioner_maku": {
+            "targetTemperature": "26",
+            "workMode": "cool",
+            "powerSwitch": "off",
+            "windSpeed": "low",
+            "temperature_max": 30,
+            "temperature_min": 16,
+            "hvac_modes": ["off", "cool", "auto", "heat", "dry", "fan_only"],
+            "fan_modes": ["low", "medium", "high", "auto"],
+        },
     }
 
     # 辅助函数：初始化 properties
@@ -462,6 +475,19 @@ def phase_dev_list(list_data: str) -> list:
             initialize_properties(device, DEFAULT_PROPERTIES[model])
 
         # 添加到结果列表
+        filtered_devices.append(device)
+    # print(filtered_devices)
+    return filtered_devices
+
+
+def phase_smart_list(list_data, devices_list: list) -> list:
+    """Phase smart list."""
+    filtered_devices = devices_list
+    data = list_data.get("data", "")
+    smartList = json.loads(data)
+    for device in smartList.get("smartList", []):
+        # 设置设备类型
+        device["type"] = "scene"
         filtered_devices.append(device)
     # print(filtered_devices)
     return filtered_devices

@@ -59,6 +59,27 @@ class UIOTDevice:
                     return state
         return state
 
+    async def scene_control_real(self, smartId) -> int:
+        """Uiot device control."""
+        self._http_client.body = {
+            "thirdSn": self._config.third_sn,
+            "appKey": self._config.app_key,
+            "sn": self._config.host_sn,
+            "smartId": smartId,
+        }
+        header = {
+            "timestamp": get_timestamp_str(),
+            "appkey": self._config.app_key,
+            "accessToken": self._config.access_token,
+            "method": "uiotsoft.openapi.smart.control",
+        }
+        _LOGGER.debug("body:%s", self._http_client.body)
+        self._http_client.update_header(header)
+        res = await self._http_client.request_async(
+            self._config.request_url, secret=self._config.app_secret
+        )
+        return res["status"]
+
 
 def remove_device(hass: HomeAssistant, config_entry_id: str):
     """Uiot device remove."""
