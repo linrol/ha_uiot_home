@@ -1,0 +1,25 @@
+name: Auto Release
+
+on:
+  push:
+    tags:
+      - 'v*'  # 以 v 开头的 tag，比如 v1.0.0，v2.3.4 等
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Zip the release directory
+        run: |
+          zip -r uiot_home.zip custom_components/uiot_home/*
+
+      - name: Upload release asset
+        uses: softprops/action-gh-release@v2
+        with:
+          files: uiot_home.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
