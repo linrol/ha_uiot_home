@@ -250,7 +250,11 @@ class Climate(ClimateEntity):
                     self._cur_current_temperature = float(cTemperature)
                 if "targetTemperature" in payload_str:
                     tTemperature = payload_str.get("targetTemperature", "")
-                    self._cur_current_temperature = float(tTemperature)
+                    # 兼容4.0网关:mqtt消息中没有currentTemperature时，则targetTemperature代表当前温度
+                    if "currentTemperature" not in payload_str:
+                        self._cur_current_temperature = float(tTemperature)
+                    else:
+                        self._cur_target_temperature = float(tTemperature)
         if "windSpeed" in payload_str:
             windSpeed = payload_str.get("windSpeed", "")
             self._fan_mode = judge_fanMode(windSpeed)
