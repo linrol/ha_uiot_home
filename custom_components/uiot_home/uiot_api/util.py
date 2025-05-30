@@ -2,6 +2,7 @@
 
 import base64
 import binascii
+from collections import OrderedDict
 from datetime import datetime
 import hashlib
 import json
@@ -39,6 +40,28 @@ def compute_md5_str(params: str) -> str:
     md5_hash = hashlib.md5()
     md5_hash.update(params.encode("utf-8"))
     return md5_hash.hexdigest()
+
+
+def calculate_mqtt_sign(message: str, app_secret: str) -> str:
+    """calculate_mqtt_sign."""
+    # 使用 OrderedDict 保证字段顺序
+    data = json.loads(message, object_pairs_hook=OrderedDict)
+
+    # 转换为标准 dict 并提取 header 和 payload
+    json_obj = dict(data)
+    header = json_obj.get("header", {})
+    payload = json_obj.get("payload", {})
+
+    header_json = json.dumps(header, separators=(",", ":"))
+    payload_json = json.dumps(payload, separators=(",", ":"))
+    # 构建待签名字符串
+    mds_str = (
+        f"header={header_json}"  # 第一部分
+        f"&payload={payload_json}"  # 第二部分
+        f"{app_secret}"  # 第三部分
+    )
+    # 计算 MD5
+    return hashlib.md5(mds_str.encode("utf-8")).hexdigest()
 
 
 def encrypt1(plaintext: str, key: str) -> str:
@@ -95,6 +118,9 @@ def phase_dev_list(list_data: str) -> list:
         "l_smart_color_temperature_spotlight": "light",
         "l_smart_dimming_controller": "light",
         "l_smart_tube_spotlight": "light",
+        "l_magnetic_color_controller": "light",
+        "l_smart_dimming_dali": "light",
+        "l_smart_color_temperature_dali": "light",
         "l_zf_single_switch": "switch",
         "l_zf_double_switch": "switch",
         "l_zf_three_switch": "switch",
@@ -142,6 +168,24 @@ def phase_dev_list(list_data: str) -> list:
         "ha_smart_socket": "switch",
         "ha_ir_socket_kookong": "switch",
         "hvac_ir_air_conditioner_maku": "climate",
+        "hvac_thermostat_3h1_c_child_ac": "climate",
+        "hvac_thermostat_3h1_c_child_efh": "water_heater",
+        "hvac_super_temp_panel_child_fan": "climate",
+        "hvac_485_fair_chino": "fan",
+        "hvac_485_fair_bole_cs2": "fan",
+        "hvac_485_fair_aidishi_kf800rm": "fan",
+        "hvac_485_ac_gree_fgr35d": "climate",
+        "hvac_485_ac_hitachi_pcpihhq": "climate",
+        "hvac_485_ac_haier_casarte_ycja001": "climate",
+        "hvac_485_wfh_ya_te_lee6606": "water_heater",
+        "hvac_485_efh_org": "water_heater",
+        "hvac_485_wfh_org": "water_heater",
+        "hvac_floor_heating_panel_2s1_child_efh": "water_heater",
+        "hvac_floor_heating_panel_2s1_child_wfh": "water_heater",
+        "i_smart_cloud_speaker_X10": "media_player",
+        "multi_series_panel_switch": "switch",
+        "multi_series_panel_motor": "cover",
+        "hvac_fan_coil_3h1_th": "climate",
     }
 
     MODEL_ABILITY_MAP = {
@@ -153,6 +197,7 @@ def phase_dev_list(list_data: str) -> list:
         "wc_double_motor_control_panel": 1,
         "wc_dream_curtain_motor": 3,
         "wc_smart_curtain_motor_box": 2,
+        "multi_series_panel_motor": 1,
     }
 
     # 定义默认属性
@@ -334,7 +379,7 @@ def phase_dev_list(list_data: str) -> list:
             "alarmState": "normal",
         },
         "hvac_thermostat_3h1_e3_child_ac": {
-            "currentTemperature": "25",
+            "currentTemperature": "0",
             "targetTemperature": "26",
             "thermostatMode": "cool",
             "powerSwitch": "off",
@@ -350,16 +395,15 @@ def phase_dev_list(list_data: str) -> list:
             "fan_modes": ["low", "mid", "high"],
         },
         "hvac_thermostat_3h1_e3_child_wfh": {
-            "currentTemperature": "25",
+            "currentTemperature": "0",
             "targetTemperature": "26",
-            "thermostatMode": "cool",
             "powerSwitch": "off",
             "temperature_max": 32,
             "temperature_min": 16,
             "value_switch_type": "waterValveSwitch",
         },
         "hvac_smart_gateway_engineering_ac": {
-            "currentTemperature": "25",
+            "currentTemperature": "0",
             "targetTemperature": "26",
             "thermostatMode": "cool",
             "powerSwitch": "off",
@@ -370,7 +414,7 @@ def phase_dev_list(list_data: str) -> list:
             "fan_modes": ["low", "medium", "high", "auto"],
         },
         "hvac_smart_gateway_general_ac": {
-            "currentTemperature": "25",
+            "currentTemperature": "0",
             "targetTemperature": "26",
             "thermostatMode": "cool",
             "powerSwitch": "off",
@@ -386,7 +430,7 @@ def phase_dev_list(list_data: str) -> list:
             "fan_modes": ["low", "mid", "high"],
         },
         "hvac_ac_e3": {
-            "currentTemperature": "25",
+            "currentTemperature": "0",
             "targetTemperature": "26",
             "thermostatMode": "cool",
             "powerSwitch": "off",
@@ -397,27 +441,24 @@ def phase_dev_list(list_data: str) -> list:
             "fan_modes": ["low", "medium", "high", "auto"],
         },
         "hvac_wfh_e3": {
-            "currentTemperature": "25",
+            "currentTemperature": "0",
             "targetTemperature": "26",
-            "thermostatMode": "cool",
             "powerSwitch": "off",
             "temperature_max": 32,
             "temperature_min": 16,
             "value_switch_type": "waterValveSwitch",
         },
         "hvac_water_floor_heating_3h1_th": {
-            "currentTemperature": "25",
+            "currentTemperature": "0",
             "targetTemperature": "26",
-            "thermostatMode": "cool",
             "powerSwitch": "off",
             "temperature_max": 32,
             "temperature_min": 16,
             "value_switch_type": "waterValveSwitch",
         },
         "hvac_water_floor_heating_th": {
-            "currentTemperature": "25",
+            "currentTemperature": "0",
             "targetTemperature": "26",
-            "thermostatMode": "cool",
             "powerSwitch": "off",
             "temperature_max": 32,
             "temperature_min": 16,
@@ -432,6 +473,138 @@ def phase_dev_list(list_data: str) -> list:
             "temperature_min": 16,
             "hvac_modes": ["off", "cool", "auto", "heat", "dry", "fan_only"],
             "fan_modes": ["low", "medium", "high", "auto"],
+        },
+        "hvac_thermostat_3h1_c_child_ac": {
+            "targetTemperature": "26",
+            "workMode": "cool",
+            "powerSwitch": "off",
+            "windSpeed": "low",
+            "temperature_max": 32,
+            "temperature_min": 16,
+            "hvac_modes": ["off", "cool", "heat", "dry", "fan_only"],
+            "fan_modes": ["low", "medium", "high"],
+        },
+        "hvac_thermostat_3h1_c_child_efh": {
+            "currentTemperature": "0",
+            "targetTemperature": "26",
+            "powerSwitch": "off",
+            "temperature_max": 32,
+            "temperature_min": 16,
+            "value_switch_type": "heatingSwitch",
+        },
+        "hvac_super_temp_panel_child_fan": {
+            "currentTemperature": "0",
+            "targetTemperature": "26",
+            "thermostatMode": "cool",
+            "powerSwitch": "off",
+            "windSpeed": "low",
+            "temperature_max": 32,
+            "temperature_min": 16,
+            "hvac_modes": ["off", "cool", "heat", "dry", "fan_only"],
+            "fan_modes": ["low", "medium", "high", "auto"],
+        },
+        "hvac_485_fair_chino": {
+            "powerSwitch": "off",
+            "windSpeed": "low",
+            "fan_modes": ["low", "mid", "high"],
+        },
+        "hvac_485_fair_aidishi_kf800rm": {
+            "powerSwitch": "off",
+            "windSpeed": "low",
+            "fan_modes": ["low", "mid", "high"],
+        },
+        "hvac_485_fair_bole_cs2": {
+            "powerSwitch": "off",
+            "windSpeed": "low",
+            "fan_modes": ["low", "mid", "high"],
+        },
+        "hvac_485_ac_gree_fgr35d": {
+            "currentTemperature": "0",
+            "targetTemperature": "26",
+            "thermostatMode": "cool",
+            "powerSwitch": "off",
+            "windSpeed": "low",
+            "temperature_max": 30,
+            "temperature_min": 16,
+            "hvac_modes": ["off", "cool", "heat", "dry", "fan_only", "auto"],
+            "fan_modes": ["low", "medium", "high", "auto"],
+        },
+        "hvac_485_ac_hitachi_pcpihhq": {
+            "currentTemperature": "0",
+            "targetTemperature": "26",
+            "thermostatMode": "cool",
+            "powerSwitch": "off",
+            "windSpeed": "low",
+            "temperature_max": 30,
+            "temperature_min": 16,
+            "hvac_modes": ["off", "cool", "heat", "dry", "fan_only", "auto"],
+            "fan_modes": ["low", "medium", "high", "auto"],
+        },
+        "hvac_485_ac_haier_casarte_ycja001": {
+            "currentTemperature": "0",
+            "targetTemperature": "26",
+            "thermostatMode": "cool",
+            "powerSwitch": "off",
+            "windSpeed": "low",
+            "temperature_max": 30,
+            "temperature_min": 16,
+            "hvac_modes": ["off", "cool", "heat", "dry", "fan_only", "auto"],
+            "fan_modes": ["low", "medium", "high", "auto"],
+        },
+        "hvac_485_wfh_ya_te_lee6606": {
+            "currentTemperature": "0",
+            "targetTemperature": "26",
+            "powerSwitch": "off",
+            "temperature_max": 45,
+            "temperature_min": 5,
+            "value_switch_type": "",
+        },
+        "hvac_485_efh_org": {
+            "currentTemperature": "0",
+            "targetTemperature": "26",
+            "powerSwitch": "off",
+            "temperature_max": 35,
+            "temperature_min": 5,
+            "value_switch_type": "",
+        },
+        "hvac_485_wfh_org": {
+            "currentTemperature": "0",
+            "targetTemperature": "26",
+            "powerSwitch": "off",
+            "temperature_max": 35,
+            "temperature_min": 5,
+            "value_switch_type": "",
+        },
+        "hvac_floor_heating_panel_2s1_child_wfh": {
+            "currentTemperature": "0",
+            "targetTemperature": "26",
+            "powerSwitch": "off",
+            "temperature_max": 32,
+            "temperature_min": 16,
+            "value_switch_type": "waterValveSwitch",
+        },
+        "hvac_floor_heating_panel_2s1_child_efh": {
+            "currentTemperature": "0",
+            "targetTemperature": "26",
+            "powerSwitch": "off",
+            "temperature_max": 32,
+            "temperature_min": 16,
+            "value_switch_type": "heatingSwitch",
+        },
+        "multi_series_panel_motor": {
+            "curtainPosition": 0,
+            "motorSwitch": "off",
+        },
+        "hvac_fan_coil_3h1_th": {
+            "currentTemperature": "0",
+            "targetTemperature": "26",
+            "thermostatMode": "cool",
+            "powerSwitch": "off",
+            "windSpeed": "low",
+            "temperature_max": 32,
+            "temperature_min": 16,
+            "hvac_modes": ["off", "cool", "heat", "fan_only"],
+            "fan_modes": ["low", "medium", "high"],
         },
     }
 

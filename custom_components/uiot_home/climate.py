@@ -34,6 +34,8 @@ def judge_thermostatMode(thermostatMode: str) -> str:
             cur_value = HVACMode.FAN_ONLY
         case "dehumidification":
             cur_value = HVACMode.DRY
+        case "auto":
+            cur_value = HVACMode.AUTO
         case _:
             cur_value = HVACMode.AUTO
     return cur_value
@@ -58,7 +60,7 @@ def judge_fanMode(fan_mode: str) -> str:
 async def async_setup_entry(
     hass: HomeAssistant, entry, async_add_entities: AddEntitiesCallback
 ) -> None:
-    """Set up the Switch platform from a config entry."""
+    """Set up the climate platform from a config entry."""
     _LOGGER.debug("async_setup_entry climate")
 
     devices_data = hass.data[DOMAIN].get("devices", [])
@@ -159,9 +161,12 @@ class Climate(ClimateEntity):
         )
         self._cur_current_temperature = 0
         if "currentTemperature" in properties_data:
-            self._cur_current_temperature = float(
-                properties_data.get("currentTemperature", "20.0")
-            )
+            cTemperature = properties_data.get("currentTemperature", "")
+            if cTemperature == "":
+                self._cur_current_temperature = 0
+            else:
+                self._cur_current_temperature = float(cTemperature)
+
         windSpeed = properties_data.get("windSpeed", "low")
         self._fan_mode = judge_fanMode(windSpeed)
         _LOGGER.debug("hvac_modes=%s", self._attr_hvac_modes)
@@ -247,7 +252,10 @@ class Climate(ClimateEntity):
                 self._cur_hvac_modes = judge_thermostatMode(thermostatMode)
                 if "currentTemperature" in payload_str:
                     cTemperature = payload_str.get("currentTemperature", "")
-                    self._cur_current_temperature = float(cTemperature)
+                    if cTemperature == "":
+                        self._cur_current_temperature = 0
+                    else:
+                        self._cur_current_temperature = float(cTemperature)
                 if "targetTemperature" in payload_str:
                     tTemperature = payload_str.get("targetTemperature", "")
                     self._cur_target_temperature = float(tTemperature)
