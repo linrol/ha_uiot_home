@@ -251,6 +251,7 @@ def judge_alarmState(alarmState: str) -> str:
         cur_value = "正常"
     else:
         cur_value = "报警"
+    _LOGGER.debug("alarmState:%s,cur_value:%s", alarmState, cur_value)
     return cur_value
 
 
@@ -316,8 +317,12 @@ def update_senser_status(self, payload_str):
     elif self._sensor_type == "formaldehyde":
         self._value = payload_str.get("formaldehyde", "")
     elif self._sensor_type == "alarmState":
-        alarmState = payload_str.get("alarmState")
-        self._value = judge_alarmState(alarmState)
+        if "alarmState" in payload_str:
+            alarmState = payload_str.get("alarmState")
+            _LOGGER.debug("alarmState:%s", alarmState)
+            self._value = judge_alarmState(alarmState)
+        else:
+            _LOGGER.debug("alarmState属性不存在")
     if self._value == "":
         self._value = "0"
 
@@ -453,10 +458,14 @@ class GenericSensor(SensorEntity):
             _LOGGER.warning("Received empty payload")
             return
 
-        _LOGGER.debug("收到设备状态更新: %s", payload_str)
+        _LOGGER.debug(
+            "self._attr_unique_id=%s,收到设备状态更新: %s",
+            self._attr_unique_id,
+            payload_str,
+        )
         update_senser_status(self, payload_str)
 
-        # _LOGGER.debug("self._value: %s", self._value)
+        _LOGGER.debug("self._value: %s", self._value)
         self.async_write_ha_state()
 
     @property

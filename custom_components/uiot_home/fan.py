@@ -17,7 +17,7 @@ _LOGGER = logging.getLogger(__name__)
 async def async_setup_entry(
     hass: HomeAssistant, entry, async_add_entities: AddEntitiesCallback
 ) -> None:
-    """Set up the Switch platform from a config entry."""
+    """Set up the fan platform from a config entry."""
     _LOGGER.debug("async_setup_entry fan")
 
     devices_data = hass.data[DOMAIN].get("devices", [])
@@ -90,7 +90,16 @@ class Fan(FanEntity):
         self.mac = self._attr_unique_id
         self._uiot_dev: UIOTDevice = uiot_dev
         properties_data = c_data.get("properties", "")
-        power_switch = properties_data.get("powerSwitch", "off")
+
+        if "freshAirPowerSwitch" in properties_data:
+            self._PowerSwitchType = "freshAirPowerSwitch"
+        else:
+            self._PowerSwitchType = "powerSwitch"
+        if "freshAirWindSpeed" in properties_data:
+            self._WindSpeedType = "freshAirWindSpeed"
+        else:
+            self._WindSpeedType = "windSpeed"
+        power_switch = properties_data.get(self._PowerSwitchType, "off")
         if power_switch == "off":
             self._attr_is_on = False
         else:
@@ -130,7 +139,7 @@ class Fan(FanEntity):
         _LOGGER.debug("self._percentage_step=%d", self._percentage_step)
         _LOGGER.debug("fan_mode=%s", self._fan_modes[2])
         self._fan_speed = 0
-        windSpeed = properties_data.get("windSpeed", "low")
+        windSpeed = properties_data.get(self._WindSpeedType, "low")
         if windSpeed in self._fan_modes:
             self._fan_speed = (
                 self._fan_modes.index(windSpeed) + 1
@@ -182,14 +191,14 @@ class Fan(FanEntity):
 
         _LOGGER.debug("收到设备状态更新: %s", payload_str)
 
-        if "powerSwitch" in payload_str:
-            power_switch = payload_str.get("powerSwitch", "")
+        if self._PowerSwitchType in payload_str:
+            power_switch = payload_str.get(self._PowerSwitchType, "")
             if power_switch == "off":
                 self._attr_is_on = False
             else:
                 self._attr_is_on = True
-        if "windSpeed" in payload_str:
-            windSpeed = payload_str.get("windSpeed", "")
+        if self._WindSpeedType in payload_str:
+            windSpeed = payload_str.get(self._WindSpeedType, "")
             if windSpeed in self._fan_modes:
                 self._fan_speed = (
                     self._fan_modes.index(windSpeed) + 1
@@ -232,23 +241,32 @@ class Fan(FanEntity):
     async def async_turn_on(self, percentage, preset_mode, **kwargs) -> None:
         """Turn the fan on."""
         msg_data = {}
-        msg_data["powerSwitch"] = "on"
+        msg_data[self._PowerSwitchType] = "on"
         _LOGGER.debug("msg_data:%s", msg_data)
-        await self._uiot_dev.dev_control_real(self._attr_unique_id, msg_data)
+        unique_id = self._attr_unique_id
+        res = await self._uiot_dev.dev_control_real(unique_id, msg_data)
+        _LOGGER.debug("res:%d", res)
+        if res == 0:
+            self._attr_is_on = True
         self.async_write_ha_state()
 
     async def async_turn_off(self, **kwargs) -> None:
         """Turn the fan off."""
         msg_data = {}
-        msg_data["powerSwitch"] = "off"
+        msg_data[self._PowerSwitchType] = "off"
         _LOGGER.debug("msg_data:%s", msg_data)
-        await self._uiot_dev.dev_control_real(self._attr_unique_id, msg_data)
+        unique_id = self._attr_unique_id
+        res = await self._uiot_dev.dev_control_real(unique_id, msg_data)
+        _LOGGER.debug("res:%d", res)
+        if res == 0:
+            self._attr_is_on = False
         self.async_write_ha_state()
 
     async def async_set_percentage(self, percentage: int) -> None:
         """Fan async set percentage."""
         _LOGGER.debug("percentage:%d", percentage)
         self._fan_speed = percentage
+        self.async_write_ha_state()
         if percentage == 0:
             await self.async_turn_off()
         else:
@@ -256,16 +274,19 @@ class Fan(FanEntity):
             _index = int(percentage / self._percentage_step)
             if _index >= len(self._fan_modes):
                 _index = len(self._fan_modes) - 1
-            msg_data["windSpeed"] = self._fan_modes[_index]
+            msg_data[self._WindSpeedType] = self._fan_modes[_index]
             _LOGGER.debug("msg_data:%s", msg_data)
             uid = self._attr_unique_id
-            await self._uiot_dev.dev_control_real(uid, msg_data)
+            res = await self._uiot_dev.dev_control_real(uid, msg_data)
+            if res == 0:
+                self._fan_speed = self._percentage_step * (_index + 1)
+                _LOGGER.debug("msg_data:%s", msg_data)
             self.async_write_ha_state()
 
     async def async_set_preset_mode(self, preset_mode: str):
         """Fan async set preset mode."""
         msg_data = {}
-        msg_data["windSpeed"] = preset_mode
+        msg_data[self._WindSpeedType] = preset_mode
         _LOGGER.debug("msg_data:%s", msg_data)
         uid = self._attr_unique_id
         await self._uiot_dev.dev_control_real(uid, msg_data)

@@ -88,6 +88,17 @@ After logging in successfully, a list of all host families under the user's acco
 | Infrared smart socket                                        | on、 off、Codebase air conditioning                          |
 | Codebase air conditioning                                    | on、off、mode、 temperature、wind speed                      |
 | Scene                                                        | Synchronize the scenarios set by the UIOT APP                |
+| Three-in-one temperature controller C                        | Air conditioner (on, off, mode, temperature, wind speed), brand fresh air system (on, off, wind speed), electric floor heating (on, off, temperature) |
+| Full-screen Air Conditioning Gateway C/S/E                   | Brand air conditioners (on/off, mode, temperature, wind speed) |
+| Super Temperature Controller E                               | Brand air conditioners (on/off, mode, temperature, wind speed), brand fresh air (on/off, wind speed), strong current fresh air (on/off, wind speed), fan coil units (on/off, mode, temperature, wind speed) |
+| Floor heating panel                                          | Water floor heating (on/off, temperature), Electric floor heating (on/off, temperature) |
+| Composite panel                                              | Switch, curtain motor (on, off, pause)                       |
+| Intelligent magnetic color temperature lamp                  | switch、brightness、color temperature                        |
+| DALI dimming lamp                                            | switch、brightness                                           |
+| DALI color temperature lamp                                  | switch、brightness、color temperature                        |
+| Hvac control module                                          | Brand air conditioners (on, off, mode, temperature, wind speed), brand fresh air systems (on, off, wind speed), brand floor heating (on, off, temperature) |
+| Smart voice Speaker X10                                      | Voice control of devices in HA (plug-in supported, ready for use after platform upgrade) |
+| Fan coil unit temperature controller (3H1)                   | on、off、mode、 temperature、wind speed                      |
 
 ## FAQ
 
@@ -98,3 +109,8 @@ After logging in successfully, a list of all host families under the user's acco
 ### Q2:The home name interface does not show the host name, and when you click Submit, an Unkown error occurred appears
 
 - Check the "About" section on the App to see if an alias has been set for the server. If no alias has been set, you need to set an individual name and log in again to submit
+
+### Q3:Which brands of air conditioners, fresh air systems and floor heating systems are currently supported
+- Brand air conditioners: Gree Air Conditioner FGR3.5D, Hitachi Air Conditioner PC-PIHHQ, Haier Casarte YCJ-A001
+- Brand fresh air systems: Adis Fresh Air KF-800RM, Boluo Fresh Air CS2, Jinuo Fresh Air
+- Brand floor heating: Orig water floor heating, Orig electric floor heating, YaTeLee6606 floor heating

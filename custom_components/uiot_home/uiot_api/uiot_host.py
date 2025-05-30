@@ -323,3 +323,70 @@ class UIOTHost:
             if res["status"] != 0:
                 return False
             return True
+
+    async def uiot_config_voice_switch_async(self, voiceSwitch) -> int:
+        """Uiot config voice switch async."""
+        try:
+            header = {
+                "timestamp": get_timestamp_str(),
+                "appkey": self._config.app_key,
+                "accessToken": self._config.access_token,
+                "method": "uiotsoft.openapi.nlp.configVoiceSwitch",
+            }
+            self._http_client.update_header(header)
+            self._http_client.body = {
+                "appKey": self._config.app_key,
+                "hostSn": self._config.host_sn,
+                "voiceSwitch": voiceSwitch,
+            }
+            _LOGGER.info("Header:%s", header)
+            _LOGGER.info("Body:%s", self._http_client.body)
+            res = await self._http_client.request_async(
+                self._config.request_url, secret=self._config.app_secret
+            )
+        except KeyError as e:
+            _LOGGER.error("Key error: %s", e)
+            return False
+        except Exception:
+            _LOGGER.exception("Unexpected error")
+            return False
+        else:
+            _LOGGER.debug("Res:%s", res)
+            if res["status"] != 0:
+                return False
+            return True
+
+    async def uiot_query_voice_switch_async(self) -> int:
+        """Uiot query voice switch async."""
+        try:
+            header = {
+                "timestamp": get_timestamp_str(),
+                "appkey": self._config.app_key,
+                "accessToken": self._config.access_token,
+                "method": "uiotsoft.openapi.nlp.queryVoiceSwitch",
+            }
+            self._http_client.update_header(header)
+            self._http_client.body = {
+                "appKey": self._config.app_key,
+                "hostSn": self._config.host_sn,
+            }
+            _LOGGER.info("Header:%s", header)
+            _LOGGER.info("Body:%s", self._http_client.body)
+            res = await self._http_client.request_async(
+                self._config.request_url, secret=self._config.app_secret
+            )
+        except KeyError as e:
+            _LOGGER.error("Key error: %s", e)
+            return False
+        except Exception:
+            _LOGGER.exception("Unexpected error")
+            return False
+        else:
+            data = self.get_response_data(res["text"])
+            _LOGGER.debug("data:%s", data)
+            if res["status"] != 0:
+                return False
+            data = json.loads(data)
+            voiceSwitch = data["voiceSwitch"]
+            _LOGGER.debug("voiceSwitch:%d", voiceSwitch)
+            return voiceSwitch

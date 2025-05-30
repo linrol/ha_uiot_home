@@ -114,9 +114,13 @@ class WaterHeater(WaterHeaterEntity):
         self._cur_target_temperature = float(
             properties_data.get("targetTemperature", "20.0")
         )
-        self._cur_current_temperature = float(
-            properties_data.get("currentTemperature", "20.0")
-        )
+        self._cur_current_temperature = 0
+        if "currentTemperature" in properties_data:
+            cTemperature = properties_data.get("currentTemperature", "")
+            if cTemperature == "":
+                self._cur_current_temperature = 0
+            else:
+                self._cur_current_temperature = float(cTemperature)
 
         deviceOnlineState = c_data.get("deviceOnlineState", "")
         if deviceOnlineState == 0:
@@ -191,7 +195,10 @@ class WaterHeater(WaterHeaterEntity):
             else:
                 if "currentTemperature" in payload_str:
                     cTemperature = payload_str.get("currentTemperature", "")
-                    self._cur_current_temperature = float(cTemperature)
+                    if cTemperature == "":
+                        self._cur_current_temperature = 0
+                    else:
+                        self._cur_current_temperature = float(cTemperature)
                 if "targetTemperature" in payload_str:
                     tTemperature = payload_str.get("targetTemperature", "")
                     self._cur_target_temperature = float(tTemperature)
@@ -221,7 +228,9 @@ class WaterHeater(WaterHeaterEntity):
     @property
     def current_temperature(self) -> float | None:
         """Climate current temperature."""
-        return self._cur_current_temperature
+        if self._cur_current_temperature > 0:
+            return self._cur_current_temperature
+        return None
 
     @property
     def current_operation(self) -> str:
@@ -239,6 +248,8 @@ class WaterHeater(WaterHeaterEntity):
     async def async_turn_on_value_switch(self, **kwargs) -> None:
         """Turn on."""
         msg_data = {}
+        if self._value_switch_type == "":
+            return
         msg_data[self._value_switch_type] = "on"
         _LOGGER.debug("msg_data:%s", msg_data)
         await self._uiot_dev.dev_control_real(self._attr_unique_id, msg_data)
@@ -247,6 +258,8 @@ class WaterHeater(WaterHeaterEntity):
     async def async_turn_off_value_switch(self, **kwargs) -> None:
         """Turn on."""
         msg_data = {}
+        if self._value_switch_type == "":
+            return
         msg_data[self._value_switch_type] = "off"
         _LOGGER.debug("msg_data:%s", msg_data)
         await self._uiot_dev.dev_control_real(self._attr_unique_id, msg_data)

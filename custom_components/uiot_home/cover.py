@@ -15,7 +15,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
-    """Set up Cover platform from a config entry."""
+    """Set up the Cover platform from a config entry."""
     devices_data = hass.data[DOMAIN].get("devices", [])
     device_data = []
     for device in devices_data:

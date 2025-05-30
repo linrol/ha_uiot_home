@@ -87,11 +87,16 @@ def update_light_status(self, payload_str):
                 _LOGGER.debug("kelvin:%s", self._attr_color_temp_kelvin)
 
     if payload_str.get("brightness"):
-        brightness = int(payload_str.get("brightness", "")) * 255 / 100
-        if self._attr_brightness == brightness:
-            _LOGGER.debug("brightness 不需要更新 !")
+        brightness = int(payload_str.get("brightness", ""))
+        if 0 <= brightness <= 100:
+            _LOGGER.debug("brightness:%s", brightness)
+            brightness = brightness * 255 / 100
+            if self._attr_brightness == brightness:
+                _LOGGER.debug("brightness 不需要更新 !")
+            else:
+                self._attr_brightness = brightness
         else:
-            self._attr_brightness = brightness
+            _LOGGER.debug("brightness:%s 不在0-100之间", brightness)
 
     if payload_str.get("colorAdjust") and (
         ColorMode.RGB in self._attr_supported_color_modes
@@ -132,7 +137,7 @@ def update_light_status(self, payload_str):
 async def async_setup_entry(
     hass: HomeAssistant, entry, async_add_entities: AddEntitiesCallback
 ) -> None:
-    """Set up Switch platform from a config entry."""
+    """Set up the light platform from a config entry."""
     _LOGGER.debug("async_setup_entry light")
 
     devices_data = hass.data[DOMAIN].get("devices", [])

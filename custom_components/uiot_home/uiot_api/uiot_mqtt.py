@@ -3,6 +3,7 @@
 # 标准库模块
 import json
 import logging
+import time
 
 # 第三方库模块
 import paho.mqtt.client as mqtt
@@ -14,7 +15,14 @@ from homeassistant.helpers.dispatcher import async_dispatcher_send
 
 from .const import DOMAIN
 from .uiot_config import UIOTConfig
-from .util import compute_md5_str, decrypt1, get_timestamp_str, phase_dev_list
+from .util import (
+    calculate_mqtt_sign,
+    compute_md5_str,
+    decrypt1,
+    encrypt1,
+    get_timestamp_str,
+    phase_dev_list,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -64,7 +72,8 @@ class UIOTMqttClient:
         self._client.reconnect_delay_set(min_delay=1, max_delay=120)
         # 将 tls_set 调用移到后台线程
         self.hass.async_add_executor_job(self._setup_tls)
-
+        _LOGGER.debug("_USERNAME:%s", self._USERNAME)
+        _LOGGER.debug("_PASSWD:%s", self._PASSWD)
         try:
             _LOGGER.debug("Connect to MQTT broker %s:%d", host, port)
             rc = self._client.connect(host, port, 60)
@@ -91,9 +100,13 @@ class UIOTMqttClient:
         self._mqtt_topic = "uiotsdk" + "/" + app_key + "/+/" + host_sn + "/#"
         self._client.subscribe(self._mqtt_topic)
 
+        cur_mqtt_topic = "uiotop" + "/" + app_key + "/" + host_sn + "/#"
+        _LOGGER.debug("cur_mqtt_topic: %s", cur_mqtt_topic)
+        self._client.subscribe(cur_mqtt_topic)
+
     @callback
     def _on_message(self, client, userdata, msg):
-        # _LOGGER.debug("Received message on topic:%s", msg.topic)
+        _LOGGER.debug("Received message on topic:%s", msg.topic)
         # 使用 call_soon_threadsafe 确保任务被安排到事件循环中执行
         self.hass.loop.call_soon_threadsafe(
             self.hass.async_create_task, self._handle_message(msg)
@@ -103,9 +116,10 @@ class UIOTMqttClient:
         """Handle the incoming message asynchronously within the event loop."""
 
         payload = json.loads(msg.payload.decode())
+        _LOGGER.debug("msg%s", msg.payload.decode())
         data = payload["payload"]["data"]
         msg_data = decrypt1(data, self._config.app_secret)
-        # _LOGGER.debug("解密后的数据：%s", msg_data)
+        _LOGGER.debug("解密后的数据：%s", msg_data)
 
         if (
             "state_report" in msg.topic
@@ -169,6 +183,16 @@ class UIOTMqttClient:
             _LOGGER.debug("deviceList:%s", deviceList)
             signal = "mqtt_message_network_report"
             async_dispatcher_send(self.hass, signal, deviceList)
+        elif "voice_control" in msg.topic:
+            _LOGGER.debug("语音控制")
+            sessionId = payload["header"]["params"]["sessionId"]
+            msg_data = json.loads(msg_data)
+            asr = msg_data.get("asr", "")
+            s_data = {}
+            s_data["sessionId"] = sessionId
+            s_data["data"] = asr
+            signal = "mqtt_message_voice_control"
+            async_dispatcher_send(self.hass, signal, s_data)
 
     def publish(self, topic, payload):
         """Publish a message to a topic."""
@@ -190,3 +214,38 @@ class UIOTMqttClient:
         except Exception as e:
             _LOGGER.error("Error while destroying MQTT client: %s", e)
             raise
+
+    def voice_control_result(self, sessionId, text):
+        """voice_control_result."""
+        _LOGGER.debug("voice_control_result")
+        app_key = self._config.app_key
+        host_sn = self._config.host_sn
+        topic = "uiotoprp/" + app_key + "/" + host_sn + "/ha/voice_control"
+        header = {}
+        params = {}
+        payload = {}
+        res_data = {}
+        sec_int = int(time.time())
+        header["appkey"] = app_key
+        header["clientType"] = "homeAssistant_plugin"
+        header["compression"] = "none"
+        header["identity"] = host_sn
+        header["isEncrypt"] = "false"
+        header["msgId"] = str(sec_int)
+        params["sessionId"] = sessionId
+        header["params"] = params
+        header["version"] = "1.0"
+        speech = encrypt1(text, self._config.app_secret)
+        payload["data"] = speech
+        res_data["header"] = header
+        res_data["payload"] = payload
+        json_string = json.dumps(res_data)
+        secret = self._config.app_secret
+        res_data["sign"] = calculate_mqtt_sign(json_string, secret)
+        json_string = json.dumps(res_data)
+        _LOGGER.debug("topic:%s", topic)
+        _LOGGER.debug("json_string:%s", json_string)
+        self._client.publish(
+            topic,
+            json_string,
+        )

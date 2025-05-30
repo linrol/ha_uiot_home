@@ -17,7 +17,7 @@ _LOGGER = logging.getLogger(__name__)
 async def async_setup_entry(
     hass: HomeAssistant, entry, async_add_entities: AddEntitiesCallback
 ) -> None:
-    """Set up the Switch platform from a config entry."""
+    """Set up the Scene platform from a config entry."""
     _LOGGER.debug("async_setup_entry fan")
 
     devices_data = hass.data[DOMAIN].get("devices", [])
@@ -31,7 +31,7 @@ async def async_setup_entry(
     entities = []
     for c_data in device_data:
         smartName = c_data.get("smartName", "")
-        smartId = c_data.get("smartId", "")
+        smartId = c_data.get("smartId", 0)
         _LOGGER.debug("smartName:%s", smartName)
         _LOGGER.debug("smartId:%d", smartId)
 
@@ -57,7 +57,7 @@ async def async_setup_entry(
 
             for s_data in device_data:
                 smartName = s_data.get("smartName", "")
-                smartId = s_data.get("smartId", "")
+                smartId = s_data.get("smartId", 0)
                 _LOGGER.debug("smartName:%s", smartName)
                 _LOGGER.debug("smartId:%d", smartId)
                 uiot_dev: UIOTDevice = hass.data[DOMAIN].get("uiot_dev")
